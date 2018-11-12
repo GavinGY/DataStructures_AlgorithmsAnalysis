@@ -9,7 +9,7 @@ $(target): $(obj)
 	$(cc) -o $(target) $(obj)
 
 %.o: $(src) $(inc)
-	$(cc) -c $< -o $@
+	$(cc) -c -std=c99  $< -o $@
 
 clean:
 	rm -rf $(obj) $(target)
