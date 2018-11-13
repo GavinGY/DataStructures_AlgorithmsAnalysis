@@ -1,17 +1,15 @@
 cc = gcc
-target = DataStructures_AlgorithmsAnalysis.ef
+target = DataStructures_AlgorithmsAnalysis.e
 
 inc = $(shell find ./ -name "*.h")
 src = $(shell find ./ -name "*.c")
-obj = $(src:%.c=%.o) 
-
+obj = $(src:%.c=%.o)
+ 
 $(target): $(obj)
 	$(cc) -o $(target) $(obj)
-
-%.o: $(src) $(inc)
-	$(cc) -c -std=c99  $< -o $@
+	
+%.o: %.c $(inc)
+	$(cc) -o $@ -c -std=c99  $<
 
 clean:
 	rm -rf $(obj) $(target)
-  
-
