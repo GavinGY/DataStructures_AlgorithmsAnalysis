@@ -1,5 +1,5 @@
 cc = gcc
-target = DataStructures_AlgorithmsAnalysis.e
+target = DataStructures_AlgorithmsAnalysis.ef
 
 inc = $(shell find ./ -name "*.h")
 src = $(shell find ./ -name "*.c")
