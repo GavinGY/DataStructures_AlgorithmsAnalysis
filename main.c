@@ -1,6 +1,6 @@
 #include "config.h"
 
-#define test_number 8000
+#define test_number 10
 
 int data[test_number]={0};
 int data_show[test_number]={0},data_show1[test_number]={0},data_show2[test_number]={0},data_show3[test_number]={0};
@@ -9,8 +9,10 @@ int read_txt2array(char *filename,int number,int *array_addr);
 int write_array2txt(char *filename,int number,int *array_addr);
 int generating_random_Numbers(int start,int end,int number,int *array_addr);
 int selection_problem(int *array_addr,int number,int max_k);
-int execution_time(int (*function)(int *,int,int),int *a,int b,int c);
-void show_array(int leng,int *array_addr);
+int execution_time(char *label,int (*function)(int *,int,int),int *a,int b,int c);
+int show_array(int *array_addr,int leng,int reserve);/* 测试for循环和函数递归的速度 */
+int show_array_recursion(int *array_addr,int leng,int reserve);/* 测试for循环和函数递归的速度 */
+int print_array(char *label,int *array_addr,int leng);
 
 int main(void)
 {
@@ -18,11 +20,12 @@ int main(void)
 
     srand((unsigned)time(NULL));
     generating_random_Numbers(0,9999,test_number,data);
-
-    int n = sizeof(data_show) / sizeof(int);
-
+    #ifdef PRINT
+    print_array("原始数组为：",data,sizeof(data) / sizeof(int));
+    #endif
     write_array2txt("data.txt",sizeof(data) / sizeof(int),data);
-    //show_array(sizeof(data) / sizeof(int),data);
+    
+    int n = sizeof(data_show) / sizeof(int);
     read_txt2array("data.txt",n,data_show);
     read_txt2array("data.txt",n,data_show1);
     read_txt2array("data.txt",n,data_show2);
@@ -32,46 +35,60 @@ int main(void)
     read_txt2array("data.txt",n,data_show6);
     read_txt2array("data.txt",n,data_show7);
 
-    execution_time(bubbleSort, data_show, n, 0);
-    // printf("正向排序后的数组为：\n");
-    // show_array(n,data_show);
+    execution_time("bubbleSort",bubbleSort, data_show, n, 0);
+    #ifdef PRINT
+    print_array("bubbleSort 正向排序后的数组为：",data_show,n);
+    #endif
 
-    execution_time(bubbleSort_Pro, data_show1, n, 0);
-    // printf("正向排序后的数组为：\n");
-    // show_array(n,data_show1);
+    execution_time("bubbleSort_Pro",bubbleSort_Pro, data_show1, n, 0);
+    #ifdef PRINT
+    print_array("bubbleSort_Pro 正向排序后的数组为：",data_show1,n);
+    #endif
 
-    //execution_time(quickSort, data_show2, 0, n-1);
-    // printf("正向排序后的数组为：\n");
-    // show_array(n,data_show2);
+    execution_time("quickSort",quickSort, data_show2, 0, n-1);
+    #ifdef PRINT
+    print_array("quickSort 正向排序后的数组为：",data_show2,n);
+    #endif
 
-    execution_time(InsertSort, data_show3, n, 0);
-    // printf("正向排序后的数组为：\n");
-    // show_array(n,data_show3);
+    execution_time("InsertSort",InsertSort, data_show3, n, 0);
+    #ifdef PRINT
+    print_array("InsertSort 正向排序后的数组为：",data_show3,n);
+    #endif
 
-    execution_time(ShellSort, data_show4, n, 0);
-    // printf("正向排序后的数组为：\n");
-    // show_array(n,data_show4);
+    execution_time("ShellSort",ShellSort, data_show4, n, 0);
+    #ifdef PRINT
+    print_array("ShellSort 正向排序后的数组为：",data_show4,n);
+    #endif
 
-    execution_time(SelectSort, data_show5, n, 0);
-    // printf("正向排序后的数组为：\n");
-    // show_array(n,data_show5);
+    execution_time("SelectSort",SelectSort, data_show5, n, 0);
+    #ifdef PRINT
+    print_array("SelectSort 正向排序后的数组为：",data_show5,n);
+    #endif
 
-    execution_time(HeapSort, data_show6, n, 0);
-    // printf("正向排序后的数组为：\n");
-    // show_array(n,data_show6);
+    execution_time("HeapSort",HeapSort, data_show6, n, 0);
+    #ifdef PRINT
+    print_array("HeapSort 正向排序后的数组为：",data_show6,n);
+    #endif
 
-    execution_time(MergeSort, data_show7, 0, n-1);
-    // printf("正向排序后的数组为：\n");
-    // show_array(n,data_show7);
+    execution_time("MergeSort",MergeSort, data_show7, 0, n-1);
+    #ifdef PRINT
+    print_array("MergeSort 正向排序后的数组为：",data_show7,n);
+    #endif
 
-    printf("选择问题：%d \n",execution_time(selection_problem,data_show2,n,3));
-    // show_array(n,data_show2);
+    /* 测试for循环和函数递归的速度 */
+    // execution_time("show_array",show_array, NULL, n, 0);
+    // execution_time("show_array_recursion",show_array_recursion, NULL, n, 0);
+
+    // printf("选择问题：%d \n",execution_time("election_problem",selection_problem,data_show2,n,3));
+    #ifdef PRINT
+    // print_array("选择问题 - 正向排序后的数组为：",data_show2,n);
+    #endif
 
     getchar();
     return 1;
 }
 
-int execution_time(int (*function)(int *,int,int),int *a,int b,int c)
+int execution_time(char *label,int (*function)(int *,int,int),int *a,int b,int c)
 {
     clock_t start, finish;
     double  duration; 
@@ -79,15 +96,39 @@ int execution_time(int (*function)(int *,int,int),int *a,int b,int c)
     int re = function(a,b,c);
     finish = clock(); 
     duration = (double)(finish - start) / CLOCKS_PER_SEC;  
-    printf("Function Execution Time is: %f seconds\n", duration );
+    printf("Function %s Execution Time is: %f seconds\n",label ,duration);
     return re;
 }
 
-void show_array(int leng,int *array_addr)
+int a=0;
+
+int print_array(char *label,int *array_addr,int leng)
+{
+    printf("%s ", label);
+    for (int j = 0; j<leng; j++)
+        printf("%d ", array_addr[j]);
+    printf("\n");
+    return 0;
+}
+
+int show_array(int *array_addr,int leng,int reserve)
 {
     for (int j = 0; j<leng; j++)
         printf("%d ", array_addr[j]);
-    printf("\n"); 
+        //a=j%50;   /* 测试for循环和函数递归的速度 */
+    return 0;
+}
+
+//递归实现
+int show_array_recursion(int *array_addr,int leng,int reserve) 
+{
+    if(!leng) //基准情形出现
+        return 0;
+    else{
+        printf("%d ", array_addr[leng-1]);
+        //a=leng%50; /* 测试for循环和函数递归的速度 */
+        show_array_recursion(array_addr,leng-1,reserve);
+    }
 }
 
 int read_txt2array(char *filename,int number,int *array_addr)
