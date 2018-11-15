@@ -1,6 +1,5 @@
 #include "sorting_algorithm.h"
 
-
 // 一.交换排序         8000个随机整数的排序时间（奔腾双核）        速度排名
 // 	1.冒泡排序                0.493808 seconds                        8
 // 	2.冒泡排序改进版          0.435745 seconds                        7

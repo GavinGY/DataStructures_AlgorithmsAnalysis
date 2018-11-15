@@ -13,6 +13,7 @@ int execution_time(char *label,int (*function)(int *,int,int),int *a,int b,int c
 int show_array(int *array_addr,int leng,int reserve);/* 测试for循环和函数递归的速度 */
 int show_array_recursion(int *array_addr,int leng,int reserve);/* 测试for循环和函数递归的速度 */
 int print_array(char *label,int *array_addr,int leng);
+int search_problem_dichotomy(int *arry, int leng, int item);
 
 int main(void)
 {
@@ -45,10 +46,10 @@ int main(void)
     print_array("bubbleSort_Pro 正向排序后的数组为：",data_show1,n);
     #endif
 
-    execution_time("quickSort",quickSort, data_show2, 0, n-1);
-    #ifdef PRINT
-    print_array("quickSort 正向排序后的数组为：",data_show2,n);
-    #endif
+    // execution_time("quickSort",quickSort, data_show2, 0, n-1);
+    // #ifdef PRINT
+    // print_array("quickSort 正向排序后的数组为：",data_show2,n);
+    // #endif
 
     execution_time("InsertSort",InsertSort, data_show3, n, 0);
     #ifdef PRINT
@@ -79,11 +80,21 @@ int main(void)
     // execution_time("show_array",show_array, NULL, n, 0);
     // execution_time("show_array_recursion",show_array_recursion, NULL, n, 0);
 
-    // printf("选择问题：%d \n",execution_time("election_problem",selection_problem,data_show2,n,3));
+    /* 选择问题的算法实现 */
+    int target_num = 6;
+    int num_value = execution_time("selection_problem", selection_problem, data_show2, n, target_num);
+    printf("选择问题 - 选出第 %d 个最大数为：%d （从 1 开始）\n",target_num, num_value);
     #ifdef PRINT
-    // print_array("选择问题 - 正向排序后的数组为：",data_show2,n);
+    print_array("选择问题 - 正向排序后的数组为：",data_show2,n);
     #endif
 
+    /* 查找问题的算法实现：二分法 */ // 使用有序数组或者先对数组进行排序 
+    int item = execution_time("search_problem_dichotomy", search_problem_dichotomy, data_show2, n, num_value);
+    printf("查找问题 - 查找目标 %d 的数组位置为：第 %d 个（从 0 开始）\n", num_value, item);
+    #ifdef PRINT
+    print_array("查找问题 - 正向排序后的数组为：",data_show2,n);
+    #endif
+	
     getchar();
     return 1;
 }
@@ -164,7 +175,7 @@ int generating_random_Numbers(int start,int end,int number,int *array_addr)
     //random_Numbers = rand()%leng+start;
     for (int i=0; i<number; i++)
     {
-        *(array_addr+i)=rand()%leng+start;;
+        array_addr[i] = rand()%leng+start;
     }
     //printf("%d \n", random_Numbers);
     //return random_Numbers;
@@ -174,5 +185,23 @@ int selection_problem(int *array_addr,int number,int max_k)
 {
     quickSort(array_addr, 0, number-1);
     return array_addr[number-max_k];
+}
+
+int search_problem_dichotomy(int *arry, int leng, int item)
+{
+    int low = 0;
+    int hight = leng-1;
+    int mid,guess;
+    while( low <= hight ){
+        mid = (low + hight)/2;
+        guess = arry[mid];
+        if(guess == item)
+            return mid;
+        if(guess > item)
+            hight = mid -1;
+        else
+            low = mid+1;
+    }
+    return 59999;
 }
 

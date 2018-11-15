@@ -1,4 +1,4 @@
-def = PRINT 
+def = PRINT
 # 宏定义条件编译 PRINT NULL
 target = DataStructures_AlgorithmsAnalysis.ef
 
