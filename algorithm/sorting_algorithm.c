@@ -174,6 +174,7 @@ int ShellSort(int *a, int n,int dir) {
 //三.选择排序 1.直接选择排序
 // 基本思想：依次选出数组最小的数放到数组的前面。首先从数组的第二个元素开始往后遍历，找出最小的数放到第一个位置。
 // 再从剩下数组中找出最小的数放到第二个位置。以此类推，直到数组有序。
+// 时间：O(n*1/2*n) ≈ O(n²)
 int SelectSort(int *a, int n,int dir) {
     for (int i = 0; i < n; i++)
     {
@@ -183,10 +184,10 @@ int SelectSort(int *a, int n,int dir) {
                 key = j;    //    记录数组最小值位置
             }
         }
-            if (key != i)
-            {
-                int tmp = a[key]; a[key] = a[i]; a[i] = tmp;    //    交换最小值
-            }
+        if (key != i)
+        {
+            int tmp = a[key]; a[key] = a[i]; a[i] = tmp;    //    交换最小值
+        }
     }
     return 0;
 }
