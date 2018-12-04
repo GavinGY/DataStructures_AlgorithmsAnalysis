@@ -95,6 +95,23 @@ int main(void)
     print_array("查找问题 - 正向排序后的数组为：",data_show2,n);
     #endif
 	
+	//pNode linkList=linkList_creat(5);
+	pNode linkList=linkList_creat_arr(data, n);
+	linkList_traverse(linkList);
+	linkList_get(linkList,3);
+	printf("insert和add 第 11 和 12 节点，modify 第3个节点：\n");
+	linkList_insert(linkList,11, 11111);
+	linkList_insert(linkList,12, 22222);
+	linkList_modify(linkList, 3, 33333);
+	linkList_traverse(linkList);
+	linkList_get(linkList,3);
+	linkList_find(linkList,11111);
+	printf("删除第 5 个节点： \n");
+	linkList_deleteNode(linkList, 5);
+	linkList_traverse(linkList);
+	linkList_deleteList(linkList);
+	linkList_traverse(linkList);
+	
     getchar();
     return 1;
 }

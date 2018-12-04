@@ -7,5 +7,6 @@
 #include <time.h>
 
 #include "algorithm/sorting_algorithm.h"
+#include "algorithm/linked_list.h"
 
 #endif
