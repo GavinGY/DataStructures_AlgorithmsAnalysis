@@ -14,9 +14,15 @@ int show_array(int *array_addr,int leng,int reserve);/* 测试for循环和函数
 int show_array_recursion(int *array_addr,int leng,int reserve);/* 测试for循环和函数递归的速度 */
 int print_array(char *label,int *array_addr,int leng);
 int search_problem_dichotomy(int *arry, int leng, int item);
+int print_array2(char *label,unsigned char *array_addr,int leng);
 
-int main(void)
+int main(int argc, char *argv[])
 {
+	// if( argc < 3 ){
+        // printf("usage: %s %s/n", argv[0], "infile outfile");
+        // exit(1);
+    // }
+
     printf("hello,gavin!\n");
 
     srand((unsigned)time(NULL));
@@ -95,6 +101,7 @@ int main(void)
     print_array("查找问题 - 正向排序后的数组为：",data_show2,n);
     #endif
 	
+	/* 基本数据结构：链表操作 */
 	//pNode linkList=linkList_creat(5);
 	pNode linkList=linkList_creat_arr(data, n);
 	linkList_traverse(linkList);
@@ -111,6 +118,20 @@ int main(void)
 	linkList_traverse(linkList);
 	linkList_deleteList(linkList);
 	linkList_traverse(linkList);
+	
+	/* 文本操作：二进制文本 */
+	//动态分配10个unsigned char类型的数组, 同unsigned char a[10]
+	unsigned char * arry_file=(unsigned char*)malloc(sizeof(unsigned char) * 16);
+	FILE* InputFile = fopen(argv[1], "rb+");
+	FILE* OutputFile = fopen("OutputFile.bin", "wb+");
+	if( InputFile == NULL ){
+        printf("%s, %s",argv[1],"not exit/n");
+        exit(1);
+    }   
+	int number_read = fread( arry_file, sizeof(unsigned char), 16, InputFile);
+	printf("文本操作 - 二进制文本读取的数据个数：%d 个\n",number_read);
+	print_array2("文本操作 - 二进制文本读取的数据内容：", arry_file, 16);
+	fwrite( arry_file, sizeof(unsigned char), 16, OutputFile);
 	
     getchar();
     return 1;
@@ -135,6 +156,15 @@ int print_array(char *label,int *array_addr,int leng)
     printf("%s ", label);
     for (int j = 0; j<leng; j++)
         printf("%d ", array_addr[j]);
+    printf("\n");
+    return 0;
+}
+
+int print_array2(char *label,unsigned char *array_addr,int leng)
+{
+    printf("%s", label);
+    for (int j = 0; j<leng; j++)
+        printf("%02X ", array_addr[j]);
     printf("\n");
     return 0;
 }
