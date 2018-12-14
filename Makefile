@@ -14,4 +14,4 @@ $(target): $(obj)
 	$(cc) -o $@ -c -std=c99 -D $(def) $<
 
 clean:
-	rm -rf $(obj) $(target)
+	rm -rf $(obj) $(target) OutputFile.bin

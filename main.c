@@ -14,7 +14,7 @@ int show_array(int *array_addr,int leng,int reserve);/* 测试for循环和函数
 int show_array_recursion(int *array_addr,int leng,int reserve);/* 测试for循环和函数递归的速度 */
 int print_array(char *label,int *array_addr,int leng);
 int search_problem_dichotomy(int *arry, int leng, int item);
-int print_array2(char *label,unsigned char *array_addr,int leng);
+int print_array2(char *label,unsigned int *array_addr,int leng);
 
 int main(int argc, char *argv[])
 {
@@ -119,19 +119,40 @@ int main(int argc, char *argv[])
 	linkList_deleteList(linkList);
 	linkList_traverse(linkList);
 	
+	/* CPU架构大小端判断 */
+	// 联合是一个在同一个存储空间里存储不同类型数据的数据类型。
+	// 这些存储区的地址都是一样的，联合里不同存储区的内存是重叠的，修改了任何一个其他的会受影响。
+	union
+	{
+		short i;
+		char a[2];
+	}u;
+	u.a[0] = 0x11;
+	u.a[1] = 0x22;
+	printf ("大小端判断：0x%x\n", u.i);  //0x2211 为小端  0x1122 为大端
+
 	/* 文本操作：二进制文本 */
-	//动态分配10个unsigned char类型的数组, 同unsigned char a[10]
-	unsigned char * arry_file=(unsigned char*)malloc(sizeof(unsigned char) * 16);
+	// 动态分配10个unsigned int类型的数组, 同unsigned int arry_file[10]
+	unsigned int* arry_file=(unsigned int*)malloc(sizeof(unsigned int) * 16);
 	FILE* InputFile = fopen(argv[1], "rb+");
 	FILE* OutputFile = fopen("OutputFile.bin", "wb+");
 	if( InputFile == NULL ){
         printf("%s, %s",argv[1],"not exit/n");
         exit(1);
     }   
-	int number_read = fread( arry_file, sizeof(unsigned char), 16, InputFile);
+	int number_read = fread( arry_file, sizeof(unsigned int), 16, InputFile);
+	// int aabbcc = sizeof(unsigned int);
+	// printf("整形变量：%d 个\n",aabbcc);
 	printf("文本操作 - 二进制文本读取的数据个数：%d 个\n",number_read);
+	unsigned int* addr_test = arry_file;
+	printf("测试: %X \n",addr_test);
+	unsigned int new;
+	scanf("%X",&new);
+	unsigned char* new_test = new;
+	printf("测试: %X \n",*addr_test);
+	printf("测试: %X \n",*new_test);
 	print_array2("文本操作 - 二进制文本读取的数据内容：", arry_file, 16);
-	fwrite( arry_file, sizeof(unsigned char), 16, OutputFile);
+	//fwrite( arry_file, sizeof(unsigned int), 4, OutputFile);
 	
     getchar();
     return 1;
@@ -160,7 +181,7 @@ int print_array(char *label,int *array_addr,int leng)
     return 0;
 }
 
-int print_array2(char *label,unsigned char *array_addr,int leng)
+int print_array2(char *label,unsigned int *array_addr,int leng)
 {
     printf("%s", label);
     for (int j = 0; j<leng; j++)
