@@ -15,6 +15,7 @@ int show_array_recursion(int *array_addr,int leng,int reserve);/* 测试for循�
 int print_array(char *label,int *array_addr,int leng);
 int search_problem_dichotomy(int *arry, int leng, int item);
 int print_array2(char *label,unsigned int *array_addr,int leng);
+int print_array3(char *label,char *array_addr,int leng);
 
 int main(int argc, char *argv[])
 {
@@ -134,6 +135,8 @@ int main(int argc, char *argv[])
 	/* 文本操作：二进制文本 */
 	// 动态分配10个unsigned int类型的数组, 同unsigned int arry_file[10]
 	unsigned int* arry_file=(unsigned int*)malloc(sizeof(unsigned int) * 16);
+	char* arry_addr=(char*)malloc(sizeof(char) * 16);
+	char szTemp[4]={0};
 	FILE* InputFile = fopen(argv[1], "rb+");
 	FILE* OutputFile = fopen("OutputFile.bin", "wb+");
 	if( InputFile == NULL ){
@@ -141,18 +144,26 @@ int main(int argc, char *argv[])
         exit(1);
     }   
 	int number_read = fread( arry_file, sizeof(unsigned int), 16, InputFile);
-	// int aabbcc = sizeof(unsigned int);
-	// printf("整形变量：%d 个\n",aabbcc);
 	printf("文本操作 - 二进制文本读取的数据个数：%d 个\n",number_read);
-	unsigned int* addr_test = arry_file;
-	printf("测试: %X \n",addr_test);
-	unsigned int new;
-	scanf("%X",&new);
-	unsigned char* new_test = new;
-	printf("测试: %X \n",*addr_test);
-	printf("测试: %X \n",*new_test);
-	print_array2("文本操作 - 二进制文本读取的数据内容：", arry_file, 16);
-	//fwrite( arry_file, sizeof(unsigned int), 4, OutputFile);
+	// 指针地址打印和输入，以及直接赋值操作
+	printf("测试 数组地址（指向第一个byte）: %p 地址长度 %ld Byte \n", arry_file ,sizeof(arry_file));
+	unsigned char* new;     // 整形直接赋值给指针变量的方式举例：unsigned char* new = (void*)0xFFFFFFFF
+	new = (void*)arry_file; //scanf("%p",&new);  
+	new++;
+	printf("测试 数组第一个单位数据（4Byte）%X \n", *arry_file);
+	printf("测试 地址 %p 的数据（1Byte）%X \n", new, *new); 
+	print_array2("文本操作 - 二进制文本读取的数据内容 1：", arry_file, 16);
+	// 大小端转换和文件写入
+	for (int j = 0; j<16; j++)
+         sprintf(&arry_addr[j],"%d",(char)arry_file[j]);
+	print_array3("文本操作 - 二进制文本读取的数据内容 2：", arry_addr, 16);
+	//printf("%X",arry_file[0]);
+	sprintf(szTemp,"%d",arry_file[0]);  //把整型变量保持到字符串中 ,sprintf 二进制?
+	printf("%s\n",szTemp);
+	printf("%d %d %d %d %d\n",szTemp[0],szTemp[1],szTemp[2],szTemp[3],szTemp[4]);
+	printf("%X",atoi(szTemp));
+	unsigned int arry_file_1 = atoi(szTemp);
+	fwrite(&arry_file_1, sizeof(unsigned int), 1, OutputFile);
 	
     getchar();
     return 1;
@@ -185,7 +196,16 @@ int print_array2(char *label,unsigned int *array_addr,int leng)
 {
     printf("%s", label);
     for (int j = 0; j<leng; j++)
-        printf("%02X ", array_addr[j]);
+        printf("|%08X| ", array_addr[j]);
+    printf("\n");
+    return 0;
+}
+
+int print_array3(char *label,char *array_addr,int leng)
+{
+    printf("%s", label);
+    for (int j = 0; j<leng; j++)
+        printf("|%X| ", array_addr[j]);
     printf("\n");
     return 0;
 }
