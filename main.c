@@ -17,6 +17,7 @@ int search_problem_dichotomy(int *arry, int leng, int item);
 int print_array2(char *label,unsigned int *array_addr,int leng);
 int print_array3(char *label,char *array_addr,int leng);
 
+
 int main(int argc, char *argv[])
 {
 	// if( argc < 3 ){
@@ -24,6 +25,7 @@ int main(int argc, char *argv[])
         // exit(1);
     // }
 
+	/*
     printf("hello,gavin!\n");
 
     srand((unsigned)time(NULL));
@@ -82,28 +84,34 @@ int main(int argc, char *argv[])
     #ifdef PRINT
     print_array("MergeSort 正向排序后的数组为：",data_show7,n);
     #endif
-
+	*/
+	
     /* 测试for循环和函数递归的速度 */
     // execution_time("show_array",show_array, NULL, n, 0);
     // execution_time("show_array_recursion",show_array_recursion, NULL, n, 0);
 
     /* 选择问题的算法实现 */
-    int target_num = 6;
+    	/*
+	int target_num = 6;
     int num_value = execution_time("selection_problem", selection_problem, data_show2, n, target_num);
     printf("选择问题 - 选出第 %d 个最大数为：%d （从 1 开始）\n",target_num, num_value);
     #ifdef PRINT
     print_array("选择问题 - 正向排序后的数组为：",data_show2,n);
     #endif
+	*/
 
     /* 查找问题的算法实现：二分法 */ // 使用有序数组或者先对数组进行排序 
-    int item = execution_time("search_problem_dichotomy", search_problem_dichotomy, data_show2, n, num_value);
+    	/*
+	int item = execution_time("search_problem_dichotomy", search_problem_dichotomy, data_show2, n, num_value);
     printf("查找问题 - 查找目标 %d 的数组位置为：第 %d 个（从 0 开始）\n", num_value, item);
     #ifdef PRINT
     print_array("查找问题 - 正向排序后的数组为：",data_show2,n);
     #endif
+	*/
 	
 	/* 基本数据结构：链表操作 */
 	//pNode linkList=linkList_creat(5);
+	/*
 	pNode linkList=linkList_creat_arr(data, n);
 	linkList_traverse(linkList);
 	linkList_get(linkList,3);
@@ -119,10 +127,12 @@ int main(int argc, char *argv[])
 	linkList_traverse(linkList);
 	linkList_deleteList(linkList);
 	linkList_traverse(linkList);
+	*/
 	
 	/* CPU架构大小端判断 */
 	// 联合是一个在同一个存储空间里存储不同类型数据的数据类型。
 	// 这些存储区的地址都是一样的，联合里不同存储区的内存是重叠的，修改了任何一个其他的会受影响。
+	/*
 	union
 	{
 		short i;
@@ -131,18 +141,38 @@ int main(int argc, char *argv[])
 	u.a[0] = 0x11;
 	u.a[1] = 0x22;
 	printf ("大小端判断：0x%x\n", u.i);  //0x2211 为小端  0x1122 为大端
+	*/
 
-	/* 文本操作：二进制文本 */
-	// 动态分配10个unsigned int类型的数组, 同unsigned int arry_file[10]
-	unsigned int* arry_file=(unsigned int*)malloc(sizeof(unsigned int) * 16);
+	/* 数字倒序问题，文件操作（二进制），指定字节倒序 */
+	clock_t start, finish;
+	double  duration;
+	start = clock();
+	file_reverse_4ByteA(argv[1], "aa.bin");
+	finish = clock();
+	duration = (double)(finish - start) / CLOCKS_PER_SEC;
+	printf("Function Execution Time is: %f seconds\n",duration);
+
+        start = clock();
+        file_reverse_4ByteB(argv[1], "bb.bin");
+        finish = clock();
+        duration = (double)(finish - start) / CLOCKS_PER_SEC;
+        printf("Function Execution Time is: %f seconds\n",duration);
+	
+        start = clock();
+        file_reverse_4ByteC(argv[1], "cc.bin");
+        finish = clock();
+        duration = (double)(finish - start) / CLOCKS_PER_SEC;
+        printf("Function Execution Time is: %f seconds\n",duration);
+
+	/*
 	char* arry_addr=(char*)malloc(sizeof(char) * 16);
 	char szTemp[4]={0};
 	FILE* InputFile = fopen(argv[1], "rb+");
 	FILE* OutputFile = fopen("OutputFile.bin", "wb+");
 	if( InputFile == NULL ){
-        printf("%s, %s",argv[1],"not exit/n");
-        exit(1);
-    }   
+        	printf("%s, %s",argv[1],"not exit/n");
+        	exit(1);
+    	}   
 	int number_read = fread( arry_file, sizeof(unsigned int), 16, InputFile);
 	printf("文本操作 - 二进制文本读取的数据个数：%d 个\n",number_read);
 	// 指针地址打印和输入，以及直接赋值操作
@@ -155,7 +185,7 @@ int main(int argc, char *argv[])
 	print_array2("文本操作 - 二进制文本读取的数据内容 1：", arry_file, 16);
 	// 大小端转换和文件写入
 	for (int j = 0; j<16; j++)
-         sprintf(&arry_addr[j],"%d",(char)arry_file[j]);
+        	sprintf(&arry_addr[j],"%d",(char)arry_file[j]);
 	print_array3("文本操作 - 二进制文本读取的数据内容 2：", arry_addr, 16);
 	//printf("%X",arry_file[0]);
 	sprintf(szTemp,"%d",arry_file[0]);  //把整型变量保持到字符串中 ,sprintf 二进制?
@@ -164,9 +194,10 @@ int main(int argc, char *argv[])
 	printf("%X",atoi(szTemp));
 	unsigned int arry_file_1 = atoi(szTemp);
 	fwrite(&arry_file_1, sizeof(unsigned int), 1, OutputFile);
+	*/
 	
-    getchar();
-    return 1;
+	//getchar();
+	return 1;
 }
 
 int execution_time(char *label,int (*function)(int *,int,int),int *a,int b,int c)

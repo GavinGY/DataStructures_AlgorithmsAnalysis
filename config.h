@@ -5,8 +5,11 @@
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 #include "algorithm/sorting_algorithm.h"
 #include "algorithm/linked_list.h"
+#include "algorithm/arry_reverse.h"
 
 #endif
