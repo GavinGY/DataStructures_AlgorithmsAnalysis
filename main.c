@@ -143,7 +143,7 @@ int main(int argc, char *argv[])
 	printf ("大小端判断：0x%x\n", u.i);  //0x2211 为小端  0x1122 为大端
 	*/
 
-	/* 数字倒序问题，文件操作（二进制），指定字节倒序 */
+	/* 数组逆序问题，文件操作（二进制）指定字节倒序==>大小端转换问题==>数组逆序问题 */
 	clock_t start, finish;
 	double  duration;
 	start = clock();
