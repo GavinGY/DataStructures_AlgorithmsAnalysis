@@ -23,10 +23,10 @@ int main(int argc, char *argv[])
 	// if( argc < 3 ){
         // printf("usage: %s %s/n", argv[0], "infile outfile");
         // exit(1);
-    // }
+    	// }
 
 	/*
-    printf("hello,gavin!\n");
+    	printf("hello,gavin!\n");
 
     srand((unsigned)time(NULL));
     generating_random_Numbers(0,9999,test_number,data);
@@ -90,23 +90,23 @@ int main(int argc, char *argv[])
     // execution_time("show_array",show_array, NULL, n, 0);
     // execution_time("show_array_recursion",show_array_recursion, NULL, n, 0);
 
-    /* 选择问题的算法实现 */
+    	/* 选择问题的算法实现 */
     	/*
 	int target_num = 6;
-    int num_value = execution_time("selection_problem", selection_problem, data_show2, n, target_num);
-    printf("选择问题 - 选出第 %d 个最大数为：%d （从 1 开始）\n",target_num, num_value);
-    #ifdef PRINT
-    print_array("选择问题 - 正向排序后的数组为：",data_show2,n);
-    #endif
+    	int num_value = execution_time("selection_problem", selection_problem, data_show2, n, target_num);
+    	printf("选择问题 - 选出第 %d 个最大数为：%d （从 1 开始）\n",target_num, num_value);
+    	#ifdef PRINT
+    	print_array("选择问题 - 正向排序后的数组为：",data_show2,n);
+    	#endif
 	*/
 
-    /* 查找问题的算法实现：二分法 */ // 使用有序数组或者先对数组进行排序 
+    	/* 查找问题的算法实现：二分法 */ // 使用有序数组或者先对数组进行排序 
     	/*
 	int item = execution_time("search_problem_dichotomy", search_problem_dichotomy, data_show2, n, num_value);
-    printf("查找问题 - 查找目标 %d 的数组位置为：第 %d 个（从 0 开始）\n", num_value, item);
-    #ifdef PRINT
-    print_array("查找问题 - 正向排序后的数组为：",data_show2,n);
-    #endif
+   	 printf("查找问题 - 查找目标 %d 的数组位置为：第 %d 个（从 0 开始）\n", num_value, item);
+    	#ifdef PRINT
+    	print_array("查找问题 - 正向排序后的数组为：",data_show2,n);
+    	#endif
 	*/
 	
 	/* 基本数据结构：链表操作 */
@@ -133,8 +133,7 @@ int main(int argc, char *argv[])
 	// 联合是一个在同一个存储空间里存储不同类型数据的数据类型。
 	// 这些存储区的地址都是一样的，联合里不同存储区的内存是重叠的，修改了任何一个其他的会受影响。
 	/*
-	union
-	{
+	union{
 		short i;
 		char a[2];
 	}u;
@@ -144,26 +143,34 @@ int main(int argc, char *argv[])
 	*/
 
 	/* 数组逆序问题，文件操作（二进制）指定字节倒序==>大小端转换问题==>数组逆序问题 */
-	clock_t start, finish;
-	double  duration;
+	// clock_t start, finish;
+	// double  duration;
+	/*	
 	start = clock();
 	file_reverse_4ByteA(argv[1], "aa.bin");
 	finish = clock();
 	duration = (double)(finish - start) / CLOCKS_PER_SEC;
 	printf("Function Execution Time is: %f seconds\n",duration);
-
         start = clock();
         file_reverse_4ByteB(argv[1], "bb.bin");
         finish = clock();
         duration = (double)(finish - start) / CLOCKS_PER_SEC;
         printf("Function Execution Time is: %f seconds\n",duration);
-	
         start = clock();
-        file_reverse_4ByteC(argv[1], "cc.bin");
+        file_reverse_4ByteC(argv[1], argv[2]);
+	int checksum1 = checkSum(argv[1]);
+	int checksum2 = checkSum(argv[2]);
+	printf("file %s Check sum: %d \nfile %s Check sum: %d \n", argv[1], checksum1, argv[2], checksum2);
+	if(checksum1 == checksum2)
+		printf("file check sum OK, they are the same!\n");
+	else
+		printf("file check sum FAILED !!!\n");
         finish = clock();
-        duration = (double)(finish - start) / CLOCKS_PER_SEC;
+	duration = (double)(finish - start) / CLOCKS_PER_SEC;
         printf("Function Execution Time is: %f seconds\n",duration);
-
+	*/
+	
+	/* 利用sprintf实现hex到ascii的转换 */
 	/*
 	char* arry_addr=(char*)malloc(sizeof(char) * 16);
 	char szTemp[4]={0};
@@ -196,7 +203,18 @@ int main(int argc, char *argv[])
 	fwrite(&arry_file_1, sizeof(unsigned int), 1, OutputFile);
 	*/
 	
-	//getchar();
+	/* 配置文件解析问题 Profile Parse */ 
+	// 实现获取配置文件中的指定数据，Get ==> APP.Module.KEY.Value
+        clock_t start, finish;
+        double  duration;      
+        start = clock();
+        getProfile(argv[1]);
+        finish = clock();
+        duration = (double)(finish - start) / CLOCKS_PER_SEC;
+        printf("Function Execution Time is: %f seconds\n",duration);
+
+
+	getchar();
 	return 1;
 }
 

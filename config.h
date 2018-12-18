@@ -11,5 +11,6 @@
 #include "algorithm/sorting_algorithm.h"
 #include "algorithm/linked_list.h"
 #include "algorithm/arry_reverse.h"
+#include "algorithm/profile_parse.h"
 
 #endif

@@ -3,7 +3,6 @@
 #include <unistd.h>
 
 
-int file_size(char* filename);
 int arry_reverseA(unsigned int* arry_addr,int leng, FILE* file);
 int arry_reverseC(unsigned int* arry_addr,int leng);
 
@@ -166,3 +165,26 @@ int arry_reverseC(unsigned int* arry_addr,int leng)
 		arry_addrByte[i] = arry_addrByteTemp[leng-1-i];
 }
 
+int checkSum(char* File)
+{
+        int file_leng = file_size(File);
+        int arry_leng = 0;
+        int handle_buffer = sizeof(unsigned int);
+        if(file_leng % handle_buffer)
+                arry_leng = (file_leng / handle_buffer) + handle_buffer;
+        else
+                arry_leng = (file_leng / handle_buffer);
+        unsigned int* arry_file = (unsigned int*)malloc(handle_buffer * arry_leng);
+        FILE* InputFile = fopen(File, "rb+");
+        if( InputFile == NULL ){
+                printf("%s, %s",File,"not exit/n");
+                exit(1);
+        }
+        int number_read = fread( arry_file, handle_buffer, arry_leng, InputFile);
+	unsigned char* arry_addrByte = (void*)arry_file;
+	int checksum = 0;
+	for(int i = 0; i < arry_leng; i++)
+		checksum = checksum + arry_addrByte[i];
+	fclose(InputFile);
+	return checksum;
+}
