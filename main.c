@@ -205,13 +205,17 @@ int main(int argc, char *argv[])
 	
 	/* 配置文件解析问题 Profile Parse */ 
 	// 实现获取配置文件中的指定数据，Get ==> APP.Module.KEY.Value
-        clock_t start, finish;
-        double  duration;      
-        start = clock();
-        getProfile(argv[1]);
-        finish = clock();
-        duration = (double)(finish - start) / CLOCKS_PER_SEC;
-        printf("Function Execution Time is: %f seconds\n",duration);
+	clock_t start, finish;
+	double  duration;      
+	start = clock();
+	//  getProfile(argv[1]);
+	// parse_config_file(argv[1]);
+	// print_all_vars();
+	// printf("Get %s \n",get_config_var("enable"));
+	profile_init(argv[1], argv[2]);
+	finish = clock();
+	duration = (double)(finish - start) / CLOCKS_PER_SEC;
+	printf("Function Execution Time is: %f seconds\n",duration);
 
 
 	getchar();
@@ -324,6 +328,13 @@ int selection_problem(int *array_addr,int number,int max_k)
     return array_addr[number-max_k];
 }
 
+
+//查找问题：
+//1.简单查找O(n) 2.二分查找O(log n) 3.散列表HashTable O(1)
+//2.二分查找O(log n): 使用有序数组或者先对数组进行排序 
+//  数字数组，使用快速排序算法可以直接排序   ==> 最常见场景，也最常用
+//  字符串数组，使用有序字符串数组，如字典序 char *ar[7]={"ab","abb","abc","abc","abcd","abcde","abcdef"};
+//  基数排序不适合于变长字符串排序，只适用于较短的定长字符串排序。对于变长字符串排序，用桶排序可能会更合适一些
 int search_problem_dichotomy(int *arry, int leng, int item)
 {
     int low = 0;

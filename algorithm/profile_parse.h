@@ -2,15 +2,35 @@
 #define _PROFILE_PARSE_H_
 
 #include <stdio.h>
-#include <string.h>
+#include <stdint.h>
 #include <stdlib.h>
-#include <time.h>
-#include <sys/stat.h>
+
+#include <string.h>
+#include <syslog.h>
 #include <unistd.h>
+#include <errno.h>
+#include <ctype.h>
+#include <fcntl.h>
+#include <signal.h>
 
-#include "arry_reverse.h"
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/resource.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
-int getProfile(char* profile);
+#include "../debug.h"
+
+#define	MAX_PATH_LEN		(512)
+#define	MAX_FILE_NAME_LEN	(128)
+
+int parse_config_file(char *path_to_config_file);
+void print_all_vars();
+char *get_config_var(char *var_name);
+
+int profile_init(char *profileName, char *appName);
+
+// int getProfile(char* profile);
 
 #endif
 

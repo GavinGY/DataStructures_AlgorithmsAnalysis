@@ -1,0 +1,106 @@
+
+支持的配置文件格式，例子:
+-------------------------------------------------------------------------------------------
+<AppName>                                
+[ModuleName]                             # support comment
+KeyName = "Key Value"   		         # support blank
+
+<Charlie100_FXC> 
+BinaryFileFloder = "CVA4002POC_vcm_FXC_settings-1105-sip-pc15_BFC18.1" 
+
+[NOR]
+Enable = "0" 
+Endian =  "Little"                          # Little / Big
+FillCenterBLank = "0xFF"                    # 0xFF / 0x00
+Partition0.Addr = "0x00000000-0x00130000"   # flash0.bolt  SPI flash @ CS0: 0x00000000-0x00130000 (1216KB)
+Partition0.File = "file.bin"                # bin file name 
+Partition1.Addr = "0x00130000-0x00140000"   # flash0.macadr  SPI flash @ CS0: 0x00130000-0x00140000 (64KB)
+Partition1.File = ""
+Partition2.Addr = "0x00140000-0x00150000"   # flash0.nvram  SPI flash @ CS0: 0x00140000-0x00150000 (64KB)
+Partition2.File = ""
+Partition3.Addr = "0x00150000-0x00160000"   # flash0.nvram1  SPI flash @ CS0: 0x00150000-0x00160000 (64KB)
+Partition3.File = ""
+Partition4.Addr = "0x00160000-0x00180000"   # flash0.devtree0  SPI flash @ CS0: 0x00160000-0x00180000 (128KB)
+Partition4.File = ""
+Partition5.Addr = "0x00180000-0x001A0000"   # flash0.devtree1  SPI flash @ CS0: 0x00180000-0x001A0000 (128KB)
+Partition5.File = ""
+Partition6.Addr = "0x001A0000-0x00200000"   # flash0.cmnonvol0  SPI flash @ CS0: 0x001A0000-0x00200000 (384KB)
+Partition6.File = ""
+Partition7.Addr = "0x00200000-0x00260000"   # flash0.cmnonvol1  SPI flash @ CS0: 0x00200000-0x00260000 (384KB)
+Partition7.File = ""
+Partition8.Addr = "0x00260000-0x00330000"   # flash0.rgnonvol0  SPI flash @ CS0: 0x00260000-0x00330000 (832KB)
+Partition8.File = ""
+Partition9.Addr = "0x00330000-0x00400000"   # flash0.rgnonvol1  SPI flash @ CS0: 0x00330000-0x00400000 (832KB)
+Partition9.File = ""                      
+Partition.Number = "10"
+
+[NAND]
+Enable = "1" 
+Endian =  "Little"                          # Little / Big
+FillCenterBLank = "0xFF"                    # 0xFF / 0x00
+Partition0.Addr = "0x00000000-0x00620000"   # flash1.kernel0  NAND flash @ CS1: 0x00000000-0x00620000 (7MB)
+Partition0.File = "vmlinuz-3390b0-lattice-bridge"  # bin file name 
+Partition1.Addr = "0x00620000-0x00C40000"   # flash1.kernel1  NAND flash @ CS1: 0x00620000-0x00C40000 (7MB) 
+Partition1.File = ""
+Partition2.Addr = "0x00C40000-0x01FA0000"   # flash1.cm0  NAND flash @ CS1: 0x00C40000-0x01FA0000 (20MB)
+Partition2.File = "ubifs-128k-2048-3390b0-lattice-bridge-CM.img"
+Partition3.Addr = "0x01FA0000-0x03300000"   # flash1.cm1  NAND flash @ CS1: 0x01FA0000-0x03300000 (20MB)
+Partition3.File = "customrCM/ubifs-128k-2048-3390b0-lattice-bridge-CM.img"
+Partition4.Addr = "0x03300000-0x05980000"   # flash1.rg0  NAND flash @ CS1: 0x03300000-0x05980000 (39MB)
+Partition4.File = "ubifs-128k-2048-3390b0-lattice-bridge-RG.img" 
+Partition5.Addr = "0x05980000-0x08000000"   # flash1.rg1  NAND flash @ CS1: 0x05980000-0x08000000 (39MB)
+Partition5.File = ""                     
+Partition.Number = "6"
+
+[NAND_Program]
+Enable = "1"
+Endian =  "Big"                          # Little / Big
+FileSystem = "UBIFS"
+ECC_Algorithm = "hming"
+NandFlash = ""
+
+-------------------------------------------------------------------------------------------
+
+接口功能需求：
+int profile_init(profile name, app name) //将profile中目标app name下的所有 key和value存储到内存
+char* profile_getValue(app name, moduleName, key name) //在内存中查找指定key的value
+int profile_release(void); //使用完毕，释放在内存所有占用的空间
+
+设计方案（逻辑框架设计，数据结构和算法选择）：
+设计目标：内存占用小，处理速度快，程序运行问题（考虑各种异常处理）
+
+profile_init 初始化设计方案：
+1.动态开辟一个二维数组
+2.处理无效字符串，准确提取目标内容
+3.cfg异常报错（类似规则检测报错）
+4.头文件 .h 档配置功能，设置注释符号“#” ，是否支持根据Enable来决定是否初始化对应的module
+思路：
+//遍历的时候，自动略过空白和空行，以及注释
+第一步，遍历文件每一行的第一个非0字符是否为"<"并判断<APP>是否是目标APP，记录目标APP的行数区间
+第二步，根据第二步的行数区间，遍历区间内每一行的第一个非0字符是否为"["并判断moduel的Eanle数值，记录有效moduel的行数区间
+第三步，遍历和获取APP下的全局key name 和key value。遍历和获取有效module下的所有key name 和key value。
+
+
+profile_getValue getValue设计方案：
+查出key name对应的value值
+1.查找算法的使用（简单查找，二分查找，HashTable）
+2.使用二分法，需要先对key name进行字符串排序
+3.使用散列表，HASH函数的构建和冲突处理
+
+profile_release 内存回收设计方案
+1.free函数
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
