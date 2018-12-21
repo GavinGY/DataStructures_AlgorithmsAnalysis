@@ -258,11 +258,19 @@ int profile_init(char *profileName, char *appName)
 		
 		/* judge APP name, skip invalid line*/
 		if(lineContentBufer[0] == tagAppL && (appVaildFlag == DISABLE)){
+			if(appName == NULL)
+				break;
 			char *linePositionTemp,*linePositionTemp1;
 			linePositionTemp = lineContentBufer;
-			linePositionTemp1 = linePositionTemp+1;
-		    while(linePositionTemp[0] != tagAppR)
+			linePositionTemp++;
+			while(isspace(linePositionTemp[0]))
 				linePositionTemp++;
+			linePositionTemp1 = linePositionTemp;
+			while(linePositionTemp[0] != tagAppR){
+				if(isspace(linePositionTemp[0]))
+					break;
+				linePositionTemp++;
+			}
 			int lengthTemp = linePositionTemp - linePositionTemp1;
 			appNameTag =(char *)malloc(lengthTemp); 
 			strncpy(appNameTag, linePositionTemp1, lengthTemp);
@@ -297,7 +305,7 @@ int profile_init(char *profileName, char *appName)
 	}
 	
 	if(appNameTag == NULL){
-		ErrorPrintf("APP: %s was not found, Please check APP Name for spelling errors (ignore case)\n",appName);
+		ErrorPrintf("APP: %s was not found, Please check APP Name define in profile or check spelling(ignore case)\n",appName);
 		fclose(cfg_file);
 		return -2;
 	}
