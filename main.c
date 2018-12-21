@@ -213,6 +213,13 @@ int main(int argc, char *argv[])
 	// print_all_vars();
 	// printf("Get %s \n",get_config_var("enable"));
 	profile_init(argv[1], argv[2]);
+	DebugPrintf("Main Function APP NAME %s\n",appNameTag);
+	profile_release();
+	if(appNameTag == NULL)
+		InfoPrintf("Memory release OK, value = %s\n",appNameTag);
+	else 
+	    ErrorPrintf("Memory release Failed, value = %s\n",appNameTag);
+	
 	finish = clock();
 	duration = (double)(finish - start) / CLOCKS_PER_SEC;
 	printf("Function Execution Time is: %f seconds\n",duration);

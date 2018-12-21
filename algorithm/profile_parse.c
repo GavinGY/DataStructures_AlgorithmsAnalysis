@@ -10,9 +10,8 @@
 
 
 
-
-char keyName[MAX_VAR_NUM][MAX_VAR_NAME_LEN + 1];
-char keyValue[MAX_VAR_NUM][MAX_VAR_VALUE_LEN + 1];
+char key_Name[MAX_VAR_NUM][MAX_VAR_NAME_LEN + 1];
+char key_Value[MAX_VAR_NUM][MAX_VAR_VALUE_LEN + 1];
 int g_var_num = 0;
 
 void get_dir_path_of_file(char *file, char *dir_path)
@@ -31,7 +30,7 @@ void remove_trailing_chars(char *path, char c)
 	path[--len] = '\0';
 }
 
-int getKeyValue(char **line, char **key, char **value)
+int getkey_Value(char **line, char **key, char **value)
 {
 	char *linepos;
 	char *temp;
@@ -151,7 +150,7 @@ int parse_config_file(char *path_to_config_file)
 		line[count] = '\0';
 
 		linepos = line;
-		retval = getKeyValue(&linepos, &variable, &value);
+		retval = getkey_Value(&linepos, &variable, &value);
 		if (retval != 0) {
 			Msg_Error("error parsing %s, line %d:%d\n", path_to_config_file, lineno, (int)(linepos-line));
 			continue;
@@ -172,9 +171,9 @@ int parse_config_file(char *path_to_config_file)
 			continue;
 		}
 
-		strncpy(keyName[g_var_num], variable, sizeof(keyName[g_var_num]));
+		strncpy(key_Name[g_var_num], variable, sizeof(key_Name[g_var_num]));
 		remove_trailing_chars(value, '/');
-		strncpy(keyValue[g_var_num], value, sizeof(keyValue[g_var_num]));
+		strncpy(key_Value[g_var_num], value, sizeof(key_Value[g_var_num]));
 		g_var_num++;
 		continue;
 	}
@@ -186,8 +185,8 @@ EXIT:
 char *get_config_var(char *var_name)
 {
 	for(int i = 0; i < g_var_num; i++){
-		if(strcasecmp(keyName[i],var_name)==0){
-			return keyValue[i];
+		if(strcasecmp(key_Name[i],var_name)==0){
+			return key_Value[i];
 		}	
 	}
 	Msg_Error("get %s failed", var_name);
@@ -199,9 +198,24 @@ void print_all_vars()
 	int i;
 	Msg_Error("g_var_num == %d \n", g_var_num);
 	for(i = 0; i < g_var_num; i++){
-		printf("%s = %s\n", keyName[i], keyValue[i]);
+		printf("%s = %s\n", key_Name[i], key_Value[i]);
 	}
 }
+
+#define MaxLineSize          (150)
+#define ENABLE               (1)
+#define DISABLE              (0)
+
+#define tagComment           '#'
+#define tagAppL              '<'
+#define tagAppR              '>'
+#define tagModuleL           '['
+#define tagModuleR           ']'
+#define tagKey               '='
+#define tagValue             '"'
+
+char *appNameTag = NULL;
+char ***keyElement = NULL; 
 
 
 // 配置文件初始化
@@ -209,24 +223,112 @@ int profile_init(char *profileName, char *appName)
 {
 	FILE *cfg_file = NULL;
 	int lineNumber = 0;
-	char lineHead[500];
+	char appVaildFlag = 0, moduleVaildFlag = 0;
+	char lineContent[MaxLineSize + 2];
+	char *lineContentBufer;
+	int  lineLength = 0;
 	
-	printf("Profile Name: %s, Target APP: %s \n", profileName, appName);
+	InfoPrintf("Profile Name: %s, Target APP: %s \n", profileName, appName);
 	cfg_file = fopen(profileName, "r");
 	if (cfg_file == NULL){
 		ErrorPrintf("can't open '%s' as config file, errno = %d, reason = %s \n", profileName,  errno, strerror(errno));
 		return -1;
 	} 
 
-	while(fgets(lineHead, sizeof(lineHead), cfg_file) != NULL) {
-		++lineNumber;
-		printf("line number: %d , line head: %s", lineNumber, lineHead);
+	while(fgets(lineContent, sizeof(lineContent), cfg_file) != NULL) {
+		lineNumber++;
+		lineContentBufer = lineContent;
+		lineLength = strlen(lineContent);
+		/* judge the line length */
+		if(lineLength > MaxLineSize){
+			ErrorPrintf("line too long, conf line skipped %s, line %d\n", profileName, lineNumber);
+			continue;
+		}
+		/* eat the whitespace, table symbol, and skip blank line*/
+		while((lineNumber > 0) && isspace(lineContentBufer[0])) {
+			lineContentBufer++;
+			lineLength--;
+		}
+		if(lineLength == 0)
+			continue;
+		
+		/* see if this is a comment line */
+		if (lineContentBufer[0] == tagComment)
+			continue;
+		
+		/* judge APP name, skip invalid line*/
+		if(lineContentBufer[0] == tagAppL && (appVaildFlag == DISABLE)){
+			char *linePositionTemp,*linePositionTemp1;
+			linePositionTemp = lineContentBufer;
+			linePositionTemp1 = linePositionTemp+1;
+		    while(linePositionTemp[0] != tagAppR)
+				linePositionTemp++;
+			int lengthTemp = linePositionTemp - linePositionTemp1;
+			appNameTag =(char *)malloc(lengthTemp); 
+			strncpy(appNameTag, linePositionTemp1, lengthTemp);
+			/* Find Target APP name successful */
+			if(strcasecmp(appNameTag,appName)==0){
+				appVaildFlag = ENABLE;
+				continue;
+			}
+			else{
+				free(appNameTag); 
+				appNameTag = NULL;   //建议free某个指针之后立刻把这个指针赋值为NULL
+				continue;
+			}
+		}
+		else if((lineContentBufer[0] == tagAppL) && appVaildFlag)
+			break;
+		else if(appVaildFlag == DISABLE)
+			continue;
+		
+		/* judge Module Enable value, skip invalid line*/
+		if(lineContentBufer[0] == tagModuleL && (moduleVaildFlag == DISABLE)){
+			moduleVaildFlag = ENABLE;
+			continue;
+		}
+		if(moduleVaildFlag)
+		{
+			
+		}
+		
+		printf("line number: %d , line head: %s", lineNumber, lineContentBufer);
+			
 	}
+	
+	if(appNameTag == NULL){
+		ErrorPrintf("APP: %s was not found, Please check APP Name for spelling errors (ignore case)\n",appName);
+		fclose(cfg_file);
+		return -2;
+	}
+		
 	
 EXIT:
 	fclose(cfg_file);	
 	return 1;
 }
+
+
+char *profile_getValue(char *appName, char *moduleName, char *key_Name)
+{
+	
+	
+}
+
+int profile_release(void)
+{
+	if(appNameTag != NULL){
+		DebugPrintf("Release appNameTag ...\n");
+		free(appNameTag);
+		appNameTag = NULL;  //建议free某个指针之后立刻把这个指针赋值为NULL
+	}
+	if(keyElement != NULL){
+		DebugPrintf("Release keyElement ...\n");
+		free(keyElement);
+		keyElement = NULL;
+	}
+}
+
 
 // char *fgets_line(char *s, int n, FILE *stream);
 
