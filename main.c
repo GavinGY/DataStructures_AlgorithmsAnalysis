@@ -212,13 +212,14 @@ int main(int argc, char *argv[])
 	// parse_config_file(argv[1]);
 	// print_all_vars();
 	// printf("Get %s \n",get_config_var("enable"));
+	
 	profile_init(argv[1], argv[2]);
-	DebugPrintf("Main Function APP NAME %s\n",appNameTag);
+	// DebugPrintf("Main Function APP NAME %s\n",appName);
 	profile_release();
-	if(appNameTag == NULL)
-		InfoPrintf("Memory release OK, value = %s\n",appNameTag);
-	else 
-	    ErrorPrintf("Memory release Failed, value = %s\n",appNameTag);
+	// if(appName == NULL)
+		// InfoPrintf("Memory release OK, value = %s\n",appName);
+	// else 
+	    // ErrorPrintf("Memory release Failed, value = %s\n",appName);
 	
 	finish = clock();
 	duration = (double)(finish - start) / CLOCKS_PER_SEC;

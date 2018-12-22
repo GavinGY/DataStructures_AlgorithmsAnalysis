@@ -28,9 +28,9 @@ int parse_config_file(char *path_to_config_file);
 void print_all_vars();
 char *get_config_var(char *var_name);
 
-extern char *appNameTag;
-extern char ***keyElement;
+
 int profile_init(char *profileName, char *appName);
+char *profile_getValue(char *appName, char *moduleName, char *key_Name);
 int profile_release(void);
 
 // int getProfile(char* profile);

@@ -1,5 +1,7 @@
 #include "profile_parse.h"
 
+// 参考：https://blog.csdn.net/crazycoder8848/article/details/7097088
+
 
 #define MAX_VAR_NUM			(50)
 #define	MAX_VAR_NAME_LEN	(128)
@@ -202,9 +204,10 @@ void print_all_vars()
 	}
 }
 
+#define ModulNumber          (3)
 #define MaxLineSize          (150)
-#define ENABLE               (1)
-#define DISABLE              (0)
+#define ENABLE               '1'
+#define DISABLE              '0'
 
 #define tagComment           '#'
 #define tagAppL              '<'
@@ -213,27 +216,63 @@ void print_all_vars()
 #define tagModuleR           ']'
 #define tagKey               '='
 #define tagValue             '"'
+#define tagSpaceNULL         '\0'
 
-char *appNameTag = NULL;
+char *appName = NULL;
 char ***keyElement = NULL; 
 
+// 配置文件初始化 KEY 和 value 保存
+int profileGetKey(char **linepos, char **keyName, char **keyValue)
+{
+	char *line = *linepos;
+	*keyName = line;
+	while(line[0] != tagKey){
+		line++;
+		if(isspace(line[0])) 
+			break;
+	}
+	line[0] = tagSpaceNULL; 
+	
+	while(line[0] != tagValue)
+		line++;
+	line++;
+	while(isspace(line[0]))
+		line++;
+	*keyValue = line;
+	char *temp = strchr(line, '"');
+	if(temp == NULL)
+		return -3;
+	temp[0] = tagSpaceNULL;
+	
+	// while(line[0] != tagValue){
+		// line++;
+		// if(isspace(line[0])) 
+			// break;
+	// }
+	// line[0] = tagSpaceNULL; 
+	
+	return 1;
+}
 
 // 配置文件初始化
-int profile_init(char *profileName, char *appName)
+int profile_init(char *profileName, char *appNameInput)
 {
 	FILE *cfg_file = NULL;
 	int lineNumber = 0;
-	char appVaildFlag = 0, moduleVaildFlag = 0;
+	char appVaildFlag = DISABLE, moduleVaildFlag = DISABLE, moduleFlag = DISABLE;
 	char lineContent[MaxLineSize + 2];
-	char *lineContentBufer;
-	int  lineLength = 0;
+	char *lineContentBufer,*lineElement;
+	int  lineLength = 0, moduleNum = 0;
+	char *keyName,*keyValue;
 	
-	InfoPrintf("Profile Name: %s, Target APP: %s \n", profileName, appName);
+	keyElement =(char ***)malloc(ModulNumber + 1);// 多一个用于存放APP的全局KEY元素
+	
+	InfoPrintf("Profile Name: %s, Target APP: %s \n", profileName, appNameInput);
 	cfg_file = fopen(profileName, "r");
-	if (cfg_file == NULL){
-		ErrorPrintf("can't open '%s' as config file, errno = %d, reason = %s \n", profileName,  errno, strerror(errno));
-		return -1;
-	} 
+	if(cfg_file == NULL)
+		goto EXIT1;
+	if(appNameInput == NULL)
+		goto EXIT2;
 
 	while(fgets(lineContent, sizeof(lineContent), cfg_file) != NULL) {
 		lineNumber++;
@@ -241,11 +280,12 @@ int profile_init(char *profileName, char *appName)
 		lineLength = strlen(lineContent);
 		/* judge the line length */
 		if(lineLength > MaxLineSize){
-			ErrorPrintf("line too long, conf line skipped %s, line %d\n", profileName, lineNumber);
+			ErrorPrintf("line too long, can't over %d char, profile line skipped %s, line:%d\n", MaxLineSize, profileName, lineNumber);
 			continue;
 		}
+		
 		/* eat the whitespace, table symbol, and skip blank line*/
-		while((lineNumber > 0) && isspace(lineContentBufer[0])) {
+		while((lineLength > 0) && isspace(lineContentBufer[0])) {
 			lineContentBufer++;
 			lineLength--;
 		}
@@ -253,67 +293,107 @@ int profile_init(char *profileName, char *appName)
 			continue;
 		
 		/* see if this is a comment line */
-		if (lineContentBufer[0] == tagComment)
+		if(lineContentBufer[0] == tagComment)
 			continue;
 		
-		/* judge APP name, skip invalid line*/
-		if(lineContentBufer[0] == tagAppL && (appVaildFlag == DISABLE)){
-			if(appName == NULL)
-				break;
-			char *linePositionTemp,*linePositionTemp1;
-			linePositionTemp = lineContentBufer;
-			linePositionTemp++;
-			while(isspace(linePositionTemp[0]))
-				linePositionTemp++;
-			linePositionTemp1 = linePositionTemp;
-			while(linePositionTemp[0] != tagAppR){
-				if(isspace(linePositionTemp[0]))
-					break;
-				linePositionTemp++;
+		/* judge APP name, skip invalid line*/			
+		if(appVaildFlag == DISABLE){
+			/* skip invalid line ahead of target appName. */
+			if(lineContentBufer[0] == tagAppL){ 
+				lineContentBufer++;			 
+				while(isspace(lineContentBufer[0]))
+					lineContentBufer++;
+				lineElement = lineContentBufer;
+				while(lineContentBufer[0] != tagAppR){
+					lineContentBufer++;
+					// if(lineContentBufer[0] == tagSpaceNULL) // skip blank Character behind of appName.
+						// goto EXIT3;
+					if(isspace(lineContentBufer[0])) // skip blank Character behind of appName.
+						break;
+				}
+				lineContentBufer[0] = tagSpaceNULL; /* terminate target Element(str) */
+				if(strcasecmp(lineElement,appNameInput)==0){   /* Find Target APP name successful */
+					appName =(char *)malloc(strlen(lineElement));
+					strncpy(appName, lineElement, strlen(lineElement));
+					appVaildFlag = ENABLE; 
+					continue;
+				}
+				else
+					continue;
 			}
-			int lengthTemp = linePositionTemp - linePositionTemp1;
-			appNameTag =(char *)malloc(lengthTemp); 
-			strncpy(appNameTag, linePositionTemp1, lengthTemp);
-			/* Find Target APP name successful */
-			if(strcasecmp(appNameTag,appName)==0){
-				appVaildFlag = ENABLE;
+			else
 				continue;
-			}
-			else{
-				free(appNameTag); 
-				appNameTag = NULL;   //建议free某个指针之后立刻把这个指针赋值为NULL
-				continue;
-			}
 		}
-		else if((lineContentBufer[0] == tagAppL) && appVaildFlag)
+		
+		/* over read from profile, once find next APP name. */
+		if((lineContentBufer[0] == tagAppL) && (appVaildFlag == ENABLE))  
 			break;
-		else if(appVaildFlag == DISABLE)
-			continue;
+
 		
 		/* judge Module Enable value, skip invalid line*/
-		if(lineContentBufer[0] == tagModuleL && (moduleVaildFlag == DISABLE)){
-			moduleVaildFlag = ENABLE;
+		if(lineContentBufer[0] == tagModuleL){ 
+			lineContentBufer++;		
+			while(isspace(lineContentBufer[0]))
+				lineContentBufer++;
+			lineElement = lineContentBufer;	
+			while(lineContentBufer[0] != tagModuleR){
+				lineContentBufer++;
+			if(isspace(lineContentBufer[0])) // skip blank Character behind of Module Name.
+				break;
+			}
+			lineContentBufer[0] = tagSpaceNULL;
+			//moduleName[moduleNum] = (char *)malloc(strlen(lineElement));
+			//strncpy(moduleName[moduleNum], lineElement, strlen(lineElement));
+			//DebugPrintf("moduleName:%s\n",moduleName[moduleNum]);
+			moduleNum++;
+			moduleFlag = ENABLE;
+			continue;
+		}	
+		if(moduleFlag == ENABLE){
+			while(lineContentBufer[0] != tagValue)
+				lineContentBufer++;	
+			lineContentBufer++;			
+			while(isspace(lineContentBufer[0]))
+				lineContentBufer++;
+			if(lineContentBufer[0] == ENABLE){
+				moduleVaildFlag = ENABLE;
+			}
+			else
+				moduleVaildFlag = DISABLE;
+			moduleFlag = DISABLE;
 			continue;
 		}
-		if(moduleVaildFlag)
-		{
-			
-		}
+		if(moduleVaildFlag == DISABLE)
+			continue;
 		
-		printf("line number: %d , line head: %s", lineNumber, lineContentBufer);
-			
+		int returnNum = profileGetKey(&lineContentBufer, &keyName, &keyValue);
+		if(returnNum == -3)
+			goto EXIT3;
+		//printf("line number: %d , line head: %s", lineNumber, lineContentBufer);
+		printf("keyName:%s, keyValue:%s\n", keyName, keyValue);
+		if(keyValue[0] == tagSpaceNULL)
+			InfoPrintf("keyValue NULL\n");
+	
 	}
 	
-	if(appNameTag == NULL){
-		ErrorPrintf("APP: %s was not found, Please check APP Name define in profile or check spelling(ignore case)\n",appName);
-		fclose(cfg_file);
-		return -2;
-	}
-		
-	
-EXIT:
+	/* can't find valid APP name on profile */
+	if(appName == NULL)
+		goto EXIT2;
+
+
 	fclose(cfg_file);	
 	return 1;
+EXIT1:	
+	ErrorPrintf("can't open '%s' as config file, errno = %d, reason = %s \n", profileName,  errno, strerror(errno));
+	return -1;
+EXIT2:
+	ErrorPrintf("APP: %s was not found, Please check APP Name define in profile or check spelling(ignore case)\n",appNameInput);
+	fclose(cfg_file);
+	return -2;
+EXIT3:
+	ErrorPrintf("Profile format is not correct, please check line: %d\n",lineNumber);
+	fclose(cfg_file);
+	return -3;
 }
 
 
@@ -325,46 +405,20 @@ char *profile_getValue(char *appName, char *moduleName, char *key_Name)
 
 int profile_release(void)
 {
-	if(appNameTag != NULL){
-		DebugPrintf("Release appNameTag ...\n");
-		free(appNameTag);
-		appNameTag = NULL;  //建议free某个指针之后立刻把这个指针赋值为NULL
+	if(appName != NULL){
+		DebugPrintf("Release appName ...\n");
+		free(appName);
+		appName = NULL; //建议free某个指针之后立刻把这个指针赋值为NULL
 	}
 	if(keyElement != NULL){
 		DebugPrintf("Release keyElement ...\n");
 		free(keyElement);
-		keyElement = NULL;
+		keyElement = NULL; //建议free某个指针之后立刻把这个指针赋值为NULL
 	}
 }
 
 
-// char *fgets_line(char *s, int n, FILE *stream);
 
-// int getProfile(char* profile){
-	// int fileLeng = file_size(profile);
-	// printf("profile leng %d \n", fileLeng);
-        // char* arry_file = (char*)malloc(fileLeng);
-        // FILE* InputFile = fopen(profile, "rb");
-        // if( InputFile == NULL ){
-		// printf("%s, %s",profile,"config file not exit/n");
-		// exit(1);
-	// }
-	// printf("test: %d \n",getc(InputFile));
-        
-	// fgets_line(arry_file, fileLeng, InputFile);
-	// printf("%s",arry_file);
-	
-	// while((fgets_line(arry_file, fileLeng, InputFile)) != NULL){
-		// if(strlen(arry_file)!=1)//注意这儿是1不是0，因为尽管是空行，它也会读入换行符，strlen(s)=1;
-			// printf("%s",arry_file);
-        // }
-
-	// for(int i = 0; i < fileLeng; i++){
-		// printf("%s",&arry_file[i]);
-	// }
-	// fclose(InputFile);
-	// free(arry_file);
-// }
 
 ////基于标准库 fgets 函数修改
 // char* fgets_line(char *s, int n, FILE *stream)
