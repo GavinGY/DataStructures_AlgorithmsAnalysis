@@ -261,7 +261,7 @@ int profileGetKey(char **linepos, char **keyName, char **keyValue)
 int profile_init(char *profileName, char *appNameInput)
 {
 	FILE *cfg_file = NULL;
-	int lineNumber = 0,lineNumberTemp = 0,validLineStart,validLineEnd;
+	int lineNumber = 0,lineNumberHandle = 0,lineNumberTemp = 0,lineNumberTemp1 = 0,validLineStart,validLineEnd;
 	char appVaildFlag = DISABLE, moduleVaildFlag = DISABLE, moduleFlag = DISABLE;
 	char lineContent[MaxLineSize + 2];
 	char *lineContentBufer,*lineElement;
@@ -270,7 +270,7 @@ int profile_init(char *profileName, char *appNameInput)
 	char firstInit = ENABLE;
 	char *appNameTemp = NULL;
 	char *moduleTemp[2][MaxModuleNumber]; //moduleTemp[0] ==> Name; moduleTemp[1] Enable ==> Key
-	int moduleKeyNumber[MaxModuleNumber]={};
+	int moduleKeyNumber[MaxModuleNumber]={},appKeyNumber=0;
 	
 	keyElement =(char ***)malloc(1);// 多一个用于存放APP的全局KEY元素
 	
@@ -284,6 +284,7 @@ int profile_init(char *profileName, char *appNameInput)
 AGAIN:
 	while(fgets(lineContent, sizeof(lineContent), cfg_file) != NULL) {
 		lineNumber++;
+		lineNumberHandle++;
 		/* Initialization complete, Skip invalid line. */
 		if(firstInit == DISABLE){
 			if(lineNumber < validLineStart)
@@ -305,12 +306,17 @@ AGAIN:
 			lineContentBufer++;
 			lineLength--;
 		}
-		if(lineLength == 0)
+		if(lineLength == 0){
+			lineNumberHandle--;
 			continue;
+		}
+			
 		
 		/* see if this is a comment line */
-		if(lineContentBufer[0] == tagComment)
+		if(lineContentBufer[0] == tagComment){
+			lineNumberHandle--;
 			continue;
+		}
 		
 		/* judge APP name, skip invalid line*/			
 		if(appVaildFlag == DISABLE){
@@ -333,6 +339,7 @@ AGAIN:
 					strncpy(appNameTemp, lineElement, strlen(lineElement));
 					appVaildFlag = ENABLE; 
 					validLineStart = lineNumber + 1;
+					lineNumberTemp1 = lineNumberHandle;
 					continue;
 				}
 				else
@@ -342,6 +349,7 @@ AGAIN:
 				continue;
 		}/* over first read from profile, once find next APP name. */
 		else if((lineContentBufer[0] == tagAppL) && (appVaildFlag == ENABLE)){ 
+			moduleKeyNumber[moduleNum-1] = lineNumberHandle - lineNumberTemp -2;
 			validLineEnd = lineNumber - 1;
 			firstInit = DISABLE;
 			lineNumber = 0;
@@ -370,9 +378,11 @@ AGAIN:
 				moduleTemp[0][moduleNum] = (char *)malloc(strlen(lineElement));
 				strncpy(moduleTemp[0][moduleNum], lineElement, strlen(lineElement));
 				//DebugPrintf("moduleName:%s\n",moduleTemp[0][moduleNum]);
+				if(appKeyNumber == 0)
+					appKeyNumber = lineNumberHandle - lineNumberTemp1 - 1;
 				if(lineNumberTemp)
-					moduleKeyNumber[moduleNum-1] = lineNumber - lineNumberTemp;
-				lineNumberTemp = lineNumber;
+					moduleKeyNumber[moduleNum-1] = lineNumberHandle - lineNumberTemp -2;
+				lineNumberTemp = lineNumberHandle;
 			}
 			moduleFlag = ENABLE;
 			continue;
@@ -416,6 +426,7 @@ AGAIN:
 	
 	for(int i=0;i <= moduleNum;i++)
 		DebugPrintf("moduleName:%s, moduleEanble:%s, moduleKeyNumber:%d\n",moduleTemp[0][i],moduleTemp[1][i],moduleKeyNumber[i]);
+	DebugPrintf("APP Name:%s, APP Key Number:%d \n",appNameTemp,appKeyNumber);
 	
 	/* can't find valid APP name on profile */
 	if(appNameTemp  == NULL)
