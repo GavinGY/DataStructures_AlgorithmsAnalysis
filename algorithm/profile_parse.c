@@ -204,7 +204,8 @@ void print_all_vars()
 	}
 }
 
-#define ModulNumber          (3)
+#define ElementNumber        (2)
+#define MaxModuleNumber      (5)
 #define MaxLineSize          (150)
 #define ENABLE               '1'
 #define DISABLE              '0'
@@ -219,7 +220,9 @@ void print_all_vars()
 #define tagSpaceNULL         '\0'
 
 char *appName = NULL;
+
 char ***keyElement = NULL; 
+
 
 // 配置文件初始化 KEY 和 value 保存
 int profileGetKey(char **linepos, char **keyName, char **keyValue)
@@ -239,7 +242,7 @@ int profileGetKey(char **linepos, char **keyName, char **keyValue)
 	while(isspace(line[0]))
 		line++;
 	*keyValue = line;
-	char *temp = strchr(line, '"');
+	char *temp = strchr(line, tagValue);
 	if(temp == NULL)
 		return -3;
 	temp[0] = tagSpaceNULL;
@@ -258,14 +261,18 @@ int profileGetKey(char **linepos, char **keyName, char **keyValue)
 int profile_init(char *profileName, char *appNameInput)
 {
 	FILE *cfg_file = NULL;
-	int lineNumber = 0;
+	int lineNumber = 0,lineNumberTemp = 0,validLineStart,validLineEnd;
 	char appVaildFlag = DISABLE, moduleVaildFlag = DISABLE, moduleFlag = DISABLE;
 	char lineContent[MaxLineSize + 2];
 	char *lineContentBufer,*lineElement;
 	int  lineLength = 0, moduleNum = 0;
 	char *keyName,*keyValue;
+	char firstInit = ENABLE;
+	char *appNameTemp = NULL;
+	char *moduleTemp[2][MaxModuleNumber]; //moduleTemp[0] ==> Name; moduleTemp[1] Enable ==> Key
+	int moduleKeyNumber[MaxModuleNumber]={};
 	
-	keyElement =(char ***)malloc(ModulNumber + 1);// 多一个用于存放APP的全局KEY元素
+	keyElement =(char ***)malloc(1);// 多一个用于存放APP的全局KEY元素
 	
 	InfoPrintf("Profile Name: %s, Target APP: %s \n", profileName, appNameInput);
 	cfg_file = fopen(profileName, "r");
@@ -274,8 +281,17 @@ int profile_init(char *profileName, char *appNameInput)
 	if(appNameInput == NULL)
 		goto EXIT2;
 
+AGAIN:
 	while(fgets(lineContent, sizeof(lineContent), cfg_file) != NULL) {
 		lineNumber++;
+		/* Initialization complete, Skip invalid line. */
+		if(firstInit == DISABLE){
+			if(lineNumber < validLineStart)
+				continue; /* skip invalid line ahead of target appName. */
+			else if(lineNumber > validLineEnd)
+				break; /* over read from profile */
+		} 
+		
 		lineContentBufer = lineContent;
 		lineLength = strlen(lineContent);
 		/* judge the line length */
@@ -313,9 +329,10 @@ int profile_init(char *profileName, char *appNameInput)
 				}
 				lineContentBufer[0] = tagSpaceNULL; /* terminate target Element(str) */
 				if(strcasecmp(lineElement,appNameInput)==0){   /* Find Target APP name successful */
-					appName =(char *)malloc(strlen(lineElement));
-					strncpy(appName, lineElement, strlen(lineElement));
+					appNameTemp  =(char *)malloc(strlen(lineElement));
+					strncpy(appNameTemp, lineElement, strlen(lineElement));
 					appVaildFlag = ENABLE; 
+					validLineStart = lineNumber + 1;
 					continue;
 				}
 				else
@@ -323,66 +340,91 @@ int profile_init(char *profileName, char *appNameInput)
 			}
 			else
 				continue;
+		}/* over first read from profile, once find next APP name. */
+		else if((lineContentBufer[0] == tagAppL) && (appVaildFlag == ENABLE)){ 
+			validLineEnd = lineNumber - 1;
+			firstInit = DISABLE;
+			lineNumber = 0;
+			if(moduleNum >= MaxModuleNumber)
+				goto EXIT4;
+			moduleNum = 0;
+			fclose(cfg_file);
+			cfg_file = fopen(profileName, "r");
+			goto AGAIN;
 		}
-		
-		/* over read from profile, once find next APP name. */
-		if((lineContentBufer[0] == tagAppL) && (appVaildFlag == ENABLE))  
-			break;
 
 		
 		/* judge Module Enable value, skip invalid line*/
 		if(lineContentBufer[0] == tagModuleL){ 
-			lineContentBufer++;		
-			while(isspace(lineContentBufer[0]))
-				lineContentBufer++;
-			lineElement = lineContentBufer;	
-			while(lineContentBufer[0] != tagModuleR){
-				lineContentBufer++;
-			if(isspace(lineContentBufer[0])) // skip blank Character behind of Module Name.
-				break;
+			if(firstInit == ENABLE){
+				lineContentBufer++;		
+				while(isspace(lineContentBufer[0]))
+					lineContentBufer++;
+				lineElement = lineContentBufer;	
+				while(lineContentBufer[0] != tagModuleR){
+					lineContentBufer++;
+					if(isspace(lineContentBufer[0])) // skip blank Character behind of Module Name.
+						break;
+				}
+				lineContentBufer[0] = tagSpaceNULL;
+				moduleTemp[0][moduleNum] = (char *)malloc(strlen(lineElement));
+				strncpy(moduleTemp[0][moduleNum], lineElement, strlen(lineElement));
+				//DebugPrintf("moduleName:%s\n",moduleTemp[0][moduleNum]);
+				if(lineNumberTemp)
+					moduleKeyNumber[moduleNum-1] = lineNumber - lineNumberTemp;
+				lineNumberTemp = lineNumber;
 			}
-			lineContentBufer[0] = tagSpaceNULL;
-			//moduleName[moduleNum] = (char *)malloc(strlen(lineElement));
-			//strncpy(moduleName[moduleNum], lineElement, strlen(lineElement));
-			//DebugPrintf("moduleName:%s\n",moduleName[moduleNum]);
-			moduleNum++;
 			moduleFlag = ENABLE;
 			continue;
 		}	
 		if(moduleFlag == ENABLE){
-			while(lineContentBufer[0] != tagValue)
-				lineContentBufer++;	
-			lineContentBufer++;			
-			while(isspace(lineContentBufer[0]))
-				lineContentBufer++;
-			if(lineContentBufer[0] == ENABLE){
-				moduleVaildFlag = ENABLE;
+			if(firstInit == ENABLE){
+				while(lineContentBufer[0] != tagValue)
+					lineContentBufer++;	
+				lineContentBufer++;			
+				while(isspace(lineContentBufer[0]))
+					lineContentBufer++;
+				moduleTemp[1][moduleNum] = (char *)malloc(1);
+				strncpy(moduleTemp[1][moduleNum], &lineContentBufer[0], 1);
+				//DebugPrintf("moduleEanble:%s\n",moduleTemp[1][moduleNum]);
+				DebugPrintf("module number:%d\n",moduleNum);
 			}
+			if(*moduleTemp[1][moduleNum] == ENABLE)	
+				moduleVaildFlag = ENABLE;
 			else
 				moduleVaildFlag = DISABLE;
+			moduleNum++;
 			moduleFlag = DISABLE;
-			continue;
 		}
 		if(moduleVaildFlag == DISABLE)
 			continue;
+		
+		if(firstInit == ENABLE)
+			continue;
+		
+		/* The work of the second processing */
 		
 		int returnNum = profileGetKey(&lineContentBufer, &keyName, &keyValue);
 		if(returnNum == -3)
 			goto EXIT3;
 		//printf("line number: %d , line head: %s", lineNumber, lineContentBufer);
 		printf("keyName:%s, keyValue:%s\n", keyName, keyValue);
-		if(keyValue[0] == tagSpaceNULL)
-			InfoPrintf("keyValue NULL\n");
+		// if(keyValue[0] == tagSpaceNULL)
+			// InfoPrintf("keyValue NULL\n");
 	
 	}
 	
+	for(int i=0;i <= moduleNum;i++)
+		DebugPrintf("moduleName:%s, moduleEanble:%s, moduleKeyNumber:%d\n",moduleTemp[0][i],moduleTemp[1][i],moduleKeyNumber[i]);
+	
 	/* can't find valid APP name on profile */
-	if(appName == NULL)
+	if(appNameTemp  == NULL)
 		goto EXIT2;
 
 
 	fclose(cfg_file);	
 	return 1;
+
 EXIT1:	
 	ErrorPrintf("can't open '%s' as config file, errno = %d, reason = %s \n", profileName,  errno, strerror(errno));
 	return -1;
@@ -394,6 +436,10 @@ EXIT3:
 	ErrorPrintf("Profile format is not correct, please check line: %d\n",lineNumber);
 	fclose(cfg_file);
 	return -3;
+EXIT4:
+	ErrorPrintf("Profile format is not correct, Each APP supports up to %d modules\n",MaxModuleNumber);
+	fclose(cfg_file);
+	return -4;
 }
 
 
