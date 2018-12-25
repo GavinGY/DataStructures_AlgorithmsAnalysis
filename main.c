@@ -215,7 +215,9 @@ int main(int argc, char *argv[])
 	
 	profile_init(argv[1], argv[2]);
 	// DebugPrintf("Main Function APP NAME %s\n",appName);
+	profile_getALL();
 	profile_release();
+	profile_getALL();
 	// if(appName == NULL)
 		// InfoPrintf("Memory release OK, value = %s\n",appName);
 	// else 

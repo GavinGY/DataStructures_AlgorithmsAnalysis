@@ -219,9 +219,9 @@ void print_all_vars()
 #define tagValue             '"'
 #define tagSpaceNULL         '\0'
 
-char *appName = NULL;
-
-char ***keyElement = NULL; 
+char ****keyElement = NULL; 
+char *moduleTemp[2][MaxModuleNumber];//moduleTemp[0]==>Name; moduleTemp[1] Enable==>Key
+int moduleNumVaild = 0, moduleNum = 0, appKeyNumber=0, moduleKeyNumber[MaxModuleNumber];
 
 
 // 配置文件初始化 KEY 和 value 保存
@@ -261,19 +261,10 @@ int profileGetKey(char **linepos, char **keyName, char **keyValue)
 int profile_init(char *profileName, char *appNameInput)
 {
 	FILE *cfg_file = NULL;
-	int lineNumber = 0,lineNumberHandle = 0,lineNumberTemp = 0,lineNumberTemp1 = 0,validLineStart,validLineEnd;
-	char appVaildFlag = DISABLE, moduleVaildFlag = DISABLE, moduleFlag = DISABLE;
-	char lineContent[MaxLineSize + 2];
-	char *lineContentBufer,*lineElement;
-	int  lineLength = 0, moduleNum = 0;
-	char *keyName,*keyValue;
-	char firstInit = ENABLE;
-	char *appNameTemp = NULL;
-	char *moduleTemp[2][MaxModuleNumber]; //moduleTemp[0] ==> Name; moduleTemp[1] Enable ==> Key
-	int moduleKeyNumber[MaxModuleNumber]={},appKeyNumber=0;
-	
-	keyElement =(char ***)malloc(1);// 多一个用于存放APP的全局KEY元素
-	
+	int lineNumber = 0,lineLength = 0,lineNumberHandle = 0,lineNumberTemp = 0,lineNumberTemp1 = 0,validLineStart,validLineEnd;
+	char appVaildFlag = DISABLE, moduleVaildFlag = DISABLE, moduleFlag = DISABLE, firstInit = ENABLE,lineContent[MaxLineSize + 2];
+	char *lineContentBufer,*lineElement,*keyName,*keyValue,*appNameTemp = NULL;
+
 	InfoPrintf("Profile Name: %s, Target APP: %s \n", profileName, appNameInput);
 	cfg_file = fopen(profileName, "r");
 	if(cfg_file == NULL)
@@ -351,8 +342,61 @@ AGAIN:
 		else if((lineContentBufer[0] == tagAppL) && (appVaildFlag == ENABLE)){ 
 			moduleKeyNumber[moduleNum-1] = lineNumberHandle - lineNumberTemp -2;
 			validLineEnd = lineNumber - 1;
+			
+			for(int i=0;i < moduleNum;i++)
+				DebugPrintf("moduleName:%s, moduleEanble:%s, moduleKeyNumber:%d\n",moduleTemp[0][i],moduleTemp[1][i],moduleKeyNumber[i]);
+			DebugPrintf("APP Name:%s, APP Key Number:%d \n",appNameTemp,appKeyNumber);
+			DebugPrintf("moduleNumVaild: %d\n",moduleNumVaild);
+			/* 申请前三级指针变量的内存空间，用于保存Key */
+			keyElement = (char ****)malloc((moduleNumVaild+1) * sizeof(char***));// 多一个用于存放APP的全局KEY元素
+			for(int i=0; i<=moduleNumVaild; i++)
+				keyElement[i] = (char ***)malloc(ElementNumber * sizeof(char**));
+			for(int i=0; i<ElementNumber; i++)
+				keyElement[0][i] = (char **)malloc((1+moduleNum+1+appKeyNumber) * sizeof(char*));
+			int k=0;
+			for(int i=1; i<=moduleNumVaild; i++){
+				for(int j=0; j<ElementNumber; j++){
+					while(*moduleTemp[1][k]==DISABLE)
+						k++;
+					keyElement[i][j] = (char **)malloc(moduleKeyNumber[k]);
+					DebugPrintf("malloc(moduleKeyNumber[k],%d\n",moduleKeyNumber[k]);
+				}
+				k++;
+			}
+			/* 申请第四级指针变量的内存空间，保存APP基本信息(appName, moduleName, moduleEnable) */
+			char *appNameLable="appName";
+			keyElement[0][0][0] = (char *)malloc(strlen(appNameLable));
+			strncpy(keyElement[0][0][0], appNameLable, strlen(appNameLable));
+			keyElement[0][1][0] = (char *)malloc(strlen(appNameTemp));
+			strncpy(keyElement[0][1][0], appNameTemp, strlen(appNameTemp));
+			for(int i=1;i <=moduleNum;i++){
+				keyElement[0][0][i] = (char *)malloc(strlen(moduleTemp[0][i-1]));
+				strncpy(keyElement[0][0][i], moduleTemp[0][i-1], strlen(moduleTemp[0][i-1]));
+				keyElement[0][1][i] = (char *)malloc(strlen(moduleTemp[1][i-1]));
+				strncpy(keyElement[0][1][i], moduleTemp[1][i-1], strlen(moduleTemp[1][i-1]));
+			}
+			// DebugPrintf("ADDR : %p\n",keyElement);
+			// DebugPrintf("ADDR 0: %p\n",keyElement[0]);
+			// DebugPrintf("ADDR 00: %p\n",keyElement[0][0]);
+			// DebugPrintf("ADDR 000: %p\n",keyElement[0][0][0]);
+			// DebugPrintf("ADDR 001: %p\n",keyElement[0][0][1]);
+			// DebugPrintf("ADDR 002: %p\n",keyElement[0][0][2]);
+			// DebugPrintf("ADDR 003: %p\n",keyElement[0][0][3]);
+			// DebugPrintf("ADDR 004: %p\n",keyElement[0][0][4]);
+			// DebugPrintf("ADDR 005: %p\n",keyElement[0][0][5]);
+			// DebugPrintf("ADDR 006: %p\n",keyElement[0][0][6]);
+			// DebugPrintf("ADDR 010: %p\n",keyElement[0][1][0]);
+			// DebugPrintf("ADDR 011: %p\n",keyElement[0][1][1]);
+			// DebugPrintf("ADDR 012: %p\n",keyElement[0][1][2]);
+			// DebugPrintf("ADDR 013: %p\n",keyElement[0][1][3]);
+			// DebugPrintf("ADDR 014: %p\n",keyElement[0][1][4]);
+			// DebugPrintf("ADDR 015: %p\n",keyElement[0][1][5]);
+			// DebugPrintf("ADDR 016: %p\n",keyElement[0][1][6]);
+			// DebugPrintf("Gavin#### %s\n",keyElement[0][1][0]);
+			/* 变量重新初始化 */		
 			firstInit = DISABLE;
 			lineNumber = 0;
+			moduleNumVaild = 0;
 			if(moduleNum >= MaxModuleNumber)
 				goto EXIT4;
 			moduleNum = 0;
@@ -399,8 +443,10 @@ AGAIN:
 				//DebugPrintf("moduleEanble:%s\n",moduleTemp[1][moduleNum]);
 				DebugPrintf("module number:%d\n",moduleNum);
 			}
-			if(*moduleTemp[1][moduleNum] == ENABLE)	
+			if(*moduleTemp[1][moduleNum] == ENABLE){	
 				moduleVaildFlag = ENABLE;
+				moduleNumVaild++;
+			}
 			else
 				moduleVaildFlag = DISABLE;
 			moduleNum++;
@@ -423,10 +469,6 @@ AGAIN:
 			// InfoPrintf("keyValue NULL\n");
 	
 	}
-	
-	for(int i=0;i <= moduleNum;i++)
-		DebugPrintf("moduleName:%s, moduleEanble:%s, moduleKeyNumber:%d\n",moduleTemp[0][i],moduleTemp[1][i],moduleKeyNumber[i]);
-	DebugPrintf("APP Name:%s, APP Key Number:%d \n",appNameTemp,appKeyNumber);
 	
 	/* can't find valid APP name on profile */
 	if(appNameTemp  == NULL)
@@ -460,18 +502,91 @@ char *profile_getValue(char *appName, char *moduleName, char *key_Name)
 	
 }
 
+int profile_getALL(void)
+{
+	if(keyElement == NULL){
+		ErrorPrintf("keyElement is NULL!\n");
+		return 0;
+	}
+	for(int i=0;i <= 4;i++)
+		DebugPrintf("%s, %s\n",keyElement[0][0][i],keyElement[0][1][i]);
+}
+
+void FreeGrid(char**** p)
+{
+    if(*p != NULL)
+    {
+        if(**p != NULL)
+        {
+			 if(***p != NULL)
+			{
+				free(***p);
+				***p = NULL;
+			}
+            free(**p);
+            **p = NULL;
+        }
+        free(*p);
+        *p = NULL;
+    }
+    free(p);
+    p = NULL;
+}
+
+void FreeGrid2(char ****p,int m,int n,int t1,int t2)
+{
+    if(p != NULL)
+    {
+		if(p[0] != NULL){
+			for(int i = 0;i < n;i++){
+				if(p[0][i] != NULL){
+					for(int j = 0;j < t1;j++){
+						if(p[0][i][j] != NULL)
+							free(p[0][i][j]);
+					}
+					free(p[0][i]);
+				}
+			}
+			free(p[0]);
+		}
+		
+		for(int i = 1;i <= m;i++){
+			if(p[i] != NULL){
+				for(int j = 0;j < n;j++){
+					if(p[i][j] != NULL){
+						int l=0;
+						while(*moduleTemp[1][l]==DISABLE)
+							l++;
+						for(int k = 0;j < moduleKeyNumber[l];j++){
+							if(p[i][j][k] != NULL)
+								free(p[i][j][k]);
+						}
+						l++;
+						free(p[i][j]);
+					}
+				}
+				free(p[i]);
+			}
+		}
+        free(p);
+        p = NULL;
+		DebugPrintf("Release OK!\n");
+    }
+}
+
+
 int profile_release(void)
 {
-	if(appName != NULL){
-		DebugPrintf("Release appName ...\n");
-		free(appName);
-		appName = NULL; //建议free某个指针之后立刻把这个指针赋值为NULL
-	}
-	if(keyElement != NULL){
-		DebugPrintf("Release keyElement ...\n");
-		free(keyElement);
-		keyElement = NULL; //建议free某个指针之后立刻把这个指针赋值为NULL
-	}
+	// if(keyElement != NULL){
+		// DebugPrintf("Release keyElement ...\n");
+		// free(keyElement);
+		// keyElement = NULL; //建议free某个指针之后立刻把这个指针赋值为NULL
+	// }
+	//FreeGrid(keyElement);
+	printf("moduleNumVaild %d \n",moduleNumVaild);
+	printf("moduleNum %d \n",moduleNum);
+	printf("appKeyNumber %d \n",appKeyNumber);
+	FreeGrid2(keyElement,moduleNumVaild,ElementNumber,(moduleNum + appKeyNumber + 2),1);
 }
 
 

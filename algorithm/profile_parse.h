@@ -31,6 +31,7 @@ char *get_config_var(char *var_name);
 
 int profile_init(char *profileName, char *appName);
 char *profile_getValue(char *appName, char *moduleName, char *key_Name);
+int profile_getALL(void);
 int profile_release(void);
 
 // int getProfile(char* profile);
