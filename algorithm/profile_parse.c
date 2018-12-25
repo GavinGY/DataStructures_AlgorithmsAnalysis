@@ -358,7 +358,7 @@ AGAIN:
 				for(int j=0; j<ElementNumber; j++){
 					while(*moduleTemp[1][k]==DISABLE)
 						k++;
-					keyElement[i][j] = (char **)malloc(moduleKeyNumber[k]);
+					keyElement[i][j] = (char **)malloc(moduleKeyNumber[k] * sizeof(char*));
 					DebugPrintf("malloc(moduleKeyNumber[k],%d\n",moduleKeyNumber[k]);
 				}
 				k++;
@@ -375,24 +375,6 @@ AGAIN:
 				keyElement[0][1][i] = (char *)malloc(strlen(moduleTemp[1][i-1]));
 				strncpy(keyElement[0][1][i], moduleTemp[1][i-1], strlen(moduleTemp[1][i-1]));
 			}
-			// DebugPrintf("ADDR : %p\n",keyElement);
-			// DebugPrintf("ADDR 0: %p\n",keyElement[0]);
-			// DebugPrintf("ADDR 00: %p\n",keyElement[0][0]);
-			// DebugPrintf("ADDR 000: %p\n",keyElement[0][0][0]);
-			// DebugPrintf("ADDR 001: %p\n",keyElement[0][0][1]);
-			// DebugPrintf("ADDR 002: %p\n",keyElement[0][0][2]);
-			// DebugPrintf("ADDR 003: %p\n",keyElement[0][0][3]);
-			// DebugPrintf("ADDR 004: %p\n",keyElement[0][0][4]);
-			// DebugPrintf("ADDR 005: %p\n",keyElement[0][0][5]);
-			// DebugPrintf("ADDR 006: %p\n",keyElement[0][0][6]);
-			// DebugPrintf("ADDR 010: %p\n",keyElement[0][1][0]);
-			// DebugPrintf("ADDR 011: %p\n",keyElement[0][1][1]);
-			// DebugPrintf("ADDR 012: %p\n",keyElement[0][1][2]);
-			// DebugPrintf("ADDR 013: %p\n",keyElement[0][1][3]);
-			// DebugPrintf("ADDR 014: %p\n",keyElement[0][1][4]);
-			// DebugPrintf("ADDR 015: %p\n",keyElement[0][1][5]);
-			// DebugPrintf("ADDR 016: %p\n",keyElement[0][1][6]);
-			// DebugPrintf("Gavin#### %s\n",keyElement[0][1][0]);
 			/* 变量重新初始化 */		
 			firstInit = DISABLE;
 			lineNumber = 0;
@@ -533,39 +515,46 @@ void FreeGrid(char**** p)
     p = NULL;
 }
 
-void FreeGrid2(char ****p,int m,int n,int t1,int t2)
+void FreeGrid2(char ****p,int m,int n,int t1,int *t2,char *arg[2][MaxModuleNumber])
 {
-    if(p != NULL)
-    {
+    if(p != NULL){
 		if(p[0] != NULL){
 			for(int i = 0;i < n;i++){
 				if(p[0][i] != NULL){
 					for(int j = 0;j < t1;j++){
-						if(p[0][i][j] != NULL)
+						if(p[0][i][j] != NULL){
 							free(p[0][i][j]);
+							p[0][i][j] = NULL;
+						}
 					}
 					free(p[0][i]);
+					p[0][i] = NULL;
 				}
 			}
 			free(p[0]);
+			p[0] = NULL;
 		}
 		
+		int l=0;
 		for(int i = 1;i <= m;i++){
 			if(p[i] != NULL){
 				for(int j = 0;j < n;j++){
 					if(p[i][j] != NULL){
-						int l=0;
-						while(*moduleTemp[1][l]==DISABLE)
+						while(*arg[1][l]==DISABLE)
 							l++;
-						for(int k = 0;j < moduleKeyNumber[l];j++){
-							if(p[i][j][k] != NULL)
+						for(int k = 0;k < t2[l];k++){
+							if(p[i][j][k] != NULL){
 								free(p[i][j][k]);
+								p[i][j][k] = NULL;
+							}
 						}
-						l++;
 						free(p[i][j]);
+						p[i][j] = NULL;
 					}
 				}
+				l++;
 				free(p[i]);
+				p[i] = NULL;
 			}
 		}
         free(p);
@@ -583,10 +572,8 @@ int profile_release(void)
 		// keyElement = NULL; //建议free某个指针之后立刻把这个指针赋值为NULL
 	// }
 	//FreeGrid(keyElement);
-	printf("moduleNumVaild %d \n",moduleNumVaild);
-	printf("moduleNum %d \n",moduleNum);
-	printf("appKeyNumber %d \n",appKeyNumber);
-	FreeGrid2(keyElement,moduleNumVaild,ElementNumber,(moduleNum + appKeyNumber + 2),1);
+	FreeGrid2(keyElement,moduleNumVaild,ElementNumber,(moduleNum + appKeyNumber + 2), moduleKeyNumber, moduleTemp);
+    keyElement = NULL;
 }
 
 
