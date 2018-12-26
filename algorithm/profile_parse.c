@@ -207,8 +207,6 @@ void print_all_vars()
 #define ElementNumber        (2)
 #define MaxmoduleNumTempber  (5)
 #define MaxLineSize          (150)
-#define ENABLE               '1'
-#define DISABLE              '0'
 
 #define tagComment           '#'
 #define tagAppL              '<'
@@ -217,7 +215,6 @@ void print_all_vars()
 #define tagModuleR           ']'
 #define tagKey               '='
 #define tagValue             '"'
-#define tagSpaceNULL         '\0'
 
 char ****keyElement = NULL; 
 char *moduleTemp[ElementNumber][MaxmoduleNumTempber];//moduleTemp[0]==>Name; moduleTemp[1] Enable==>Key

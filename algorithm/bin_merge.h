@@ -6,6 +6,7 @@
 #include <stdlib.h>
 
 #include "../debug.h"
+#include "../config.h"
 #include "profile_parse.h"
 
 int mergeImage(char *appName);

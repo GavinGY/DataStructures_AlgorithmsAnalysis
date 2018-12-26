@@ -15,5 +15,9 @@
 #include "algorithm/profile_parse.h"
 #include "algorithm/bin_merge.h"
 
+#define ENABLE               '1'
+#define DISABLE              '0'
+#define tagSpaceNULL         '\0'
+
 
 #endif

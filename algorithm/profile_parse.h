@@ -20,6 +20,7 @@
 #include <arpa/inet.h>
 
 #include "../debug.h"
+#include "../config.h"
 
 #define	MAX_PATH_LEN		(512)
 #define	MAX_FILE_NAME_LEN	(128)
