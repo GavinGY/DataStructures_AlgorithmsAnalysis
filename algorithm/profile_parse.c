@@ -205,7 +205,7 @@ void print_all_vars()
 }
 
 #define ElementNumber        (2)
-#define MaxModuleNumber      (5)
+#define MaxmoduleNumTempber  (5)
 #define MaxLineSize          (150)
 #define ENABLE               '1'
 #define DISABLE              '0'
@@ -220,8 +220,8 @@ void print_all_vars()
 #define tagSpaceNULL         '\0'
 
 char ****keyElement = NULL; 
-char *moduleTemp[2][MaxModuleNumber];//moduleTemp[0]==>Name; moduleTemp[1] Enable==>Key
-int moduleNumVaild = 0, moduleNum = 0, appKeyNumber=0, moduleKeyNumber[MaxModuleNumber];
+char *moduleTemp[ElementNumber][MaxmoduleNumTempber];//moduleTemp[0]==>Name; moduleTemp[1] Enable==>Key
+int moduleNumTempVaild = 0, moduleNum = 0, appKeyNumber=0, moduleKeyNumber[MaxmoduleNumTempber];
 
 
 // 配置文件初始化 KEY 和 value 保存
@@ -261,7 +261,8 @@ int profileGetKey(char **linepos, char **keyName, char **keyValue)
 int profile_init(char *profileName, char *appNameInput)
 {
 	FILE *cfg_file = NULL;
-	int lineNumber = 0,lineLength = 0,lineNumberHandle = 0,lineNumberTemp = 0,lineNumberTemp1 = 0,validLineStart,validLineEnd;
+	int lineNumber = 0,lineLength = 0,lineNumberHandle = 0,lineNumberTemp = 0,lineNumberTemp1 = 0;
+	int validLineStart = 0,validLineEnd = 0,save_i = 0,save_j = 0,save_k = 0,moduleNumTemp = 0;
 	char appVaildFlag = DISABLE, moduleVaildFlag = DISABLE, moduleFlag = DISABLE, firstInit = ENABLE,lineContent[MaxLineSize + 2];
 	char *lineContentBufer,*lineElement,*keyName,*keyValue,*appNameTemp = NULL;
 
@@ -276,6 +277,7 @@ AGAIN:
 	while(fgets(lineContent, sizeof(lineContent), cfg_file) != NULL) {
 		lineNumber++;
 		lineNumberHandle++;
+		
 		/* Initialization complete, Skip invalid line. */
 		if(firstInit == DISABLE){
 			if(lineNumber < validLineStart)
@@ -309,7 +311,7 @@ AGAIN:
 			continue;
 		}
 		
-		/* judge APP name, skip invalid line*/			
+		/* judge APP name and save to temp variable, skip invalid line*/			
 		if(appVaildFlag == DISABLE){
 			/* skip invalid line ahead of target appName. */
 			if(lineContentBufer[0] == tagAppL){ 
@@ -325,7 +327,7 @@ AGAIN:
 						break;
 				}
 				lineContentBufer[0] = tagSpaceNULL; /* terminate target Element(str) */
-				if(strcasecmp(lineElement,appNameInput)==0){   /* Find Target APP name successful */
+				if(!strcasecmp(lineElement,appNameInput)){   /* Find Target APP name successful */
 					appNameTemp  =(char *)malloc(strlen(lineElement));
 					strncpy(appNameTemp, lineElement, strlen(lineElement));
 					appVaildFlag = ENABLE; 
@@ -340,54 +342,54 @@ AGAIN:
 				continue;
 		}/* over first read from profile, once find next APP name. */
 		else if((lineContentBufer[0] == tagAppL) && (appVaildFlag == ENABLE)){ 
-			moduleKeyNumber[moduleNum-1] = lineNumberHandle - lineNumberTemp -2;
+			moduleKeyNumber[moduleNumTemp-1] = lineNumberHandle - lineNumberTemp -2;
 			validLineEnd = lineNumber - 1;
+			if(moduleNumTemp >= MaxmoduleNumTempber)
+				goto EXIT4;
+			moduleNum = moduleNumTemp;
 			
-			for(int i=0;i < moduleNum;i++)
-				DebugPrintf("moduleName:%s, moduleEanble:%s, moduleKeyNumber:%d\n",moduleTemp[0][i],moduleTemp[1][i],moduleKeyNumber[i]);
-			DebugPrintf("APP Name:%s, APP Key Number:%d \n",appNameTemp,appKeyNumber);
-			DebugPrintf("moduleNumVaild: %d\n",moduleNumVaild);
+			// for(int i=0;i < moduleNum;i++)
+				// DebugPrintf("moduleName:%s, moduleEanble:%s, moduleKeyNumber:%d\n",moduleTemp[0][i],moduleTemp[1][i],moduleKeyNumber[i]);
+			// DebugPrintf("APP Name:%s, APP Key Number:%d \n",appNameTemp,appKeyNumber);
+			// DebugPrintf("moduleNumTempVaild: %d\n",moduleNumTempVaild);
 			/* 申请前三级指针变量的内存空间，用于保存Key */
-			keyElement = (char ****)malloc((moduleNumVaild+1) * sizeof(char***));// 多一个用于存放APP的全局KEY元素
-			for(int i=0; i<=moduleNumVaild; i++)
+			keyElement = (char ****)malloc((moduleNumTempVaild+1) * sizeof(char***));// 多一个用于存放APP的全局KEY元素
+			for(int i=0; i<=moduleNumTempVaild; i++)
 				keyElement[i] = (char ***)malloc(ElementNumber * sizeof(char**));
 			for(int i=0; i<ElementNumber; i++)
-				keyElement[0][i] = (char **)malloc((1+moduleNum+1+appKeyNumber) * sizeof(char*));
+				keyElement[0][i] = (char **)malloc((1 + moduleNum + appKeyNumber) * sizeof(char*));
 			int k=0;
-			for(int i=1; i<=moduleNumVaild; i++){
+			for(int i=1; i<=moduleNumTempVaild; i++){
 				for(int j=0; j<ElementNumber; j++){
 					while(*moduleTemp[1][k]==DISABLE)
 						k++;
 					keyElement[i][j] = (char **)malloc(moduleKeyNumber[k] * sizeof(char*));
-					DebugPrintf("malloc(moduleKeyNumber[k],%d\n",moduleKeyNumber[k]);
 				}
 				k++;
 			}
 			/* 申请第四级指针变量的内存空间，保存APP基本信息(appName, moduleName, moduleEnable) */
-			char *appNameLable="appName";
-			keyElement[0][0][0] = (char *)malloc(strlen(appNameLable));
-			strncpy(keyElement[0][0][0], appNameLable, strlen(appNameLable));
-			keyElement[0][1][0] = (char *)malloc(strlen(appNameTemp));
-			strncpy(keyElement[0][1][0], appNameTemp, strlen(appNameTemp));
+			// char *appNameLable="appName";
+			// keyElement[0][1][0] = (char *)malloc(strlen(appNameLable));
+			// strncpy(keyElement[0][1][0], appNameLable, strlen(appNameLable));
+			keyElement[0][0][0] = (char *)malloc(strlen(appNameTemp));
+			strncpy(keyElement[0][0][0], appNameTemp, strlen(appNameTemp));
 			for(int i=1;i <=moduleNum;i++){
 				keyElement[0][0][i] = (char *)malloc(strlen(moduleTemp[0][i-1]));
-				strncpy(keyElement[0][0][i], moduleTemp[0][i-1], strlen(moduleTemp[0][i-1]));
+				strcpy(keyElement[0][0][i], moduleTemp[0][i-1]);
 				keyElement[0][1][i] = (char *)malloc(strlen(moduleTemp[1][i-1]));
-				strncpy(keyElement[0][1][i], moduleTemp[1][i-1], strlen(moduleTemp[1][i-1]));
+				strcpy(keyElement[0][1][i], moduleTemp[1][i-1]);
 			}
 			/* 变量重新初始化 */		
 			firstInit = DISABLE;
+			moduleNumTemp = 0;
+			moduleVaildFlag = ENABLE;
 			lineNumber = 0;
-			moduleNumVaild = 0;
-			if(moduleNum >= MaxModuleNumber)
-				goto EXIT4;
-			moduleNum = 0;
+			moduleNumTempVaild = 0;
 			fclose(cfg_file);
 			cfg_file = fopen(profileName, "r");
 			goto AGAIN;
 		}
 
-		
 		/* judge Module Enable value, skip invalid line*/
 		if(lineContentBufer[0] == tagModuleL){ 
 			if(firstInit == ENABLE){
@@ -401,13 +403,13 @@ AGAIN:
 						break;
 				}
 				lineContentBufer[0] = tagSpaceNULL;
-				moduleTemp[0][moduleNum] = (char *)malloc(strlen(lineElement));
-				strncpy(moduleTemp[0][moduleNum], lineElement, strlen(lineElement));
-				//DebugPrintf("moduleName:%s\n",moduleTemp[0][moduleNum]);
+				moduleTemp[0][moduleNumTemp] = (char *)malloc(strlen(lineElement));
+				strncpy(moduleTemp[0][moduleNumTemp], lineElement, strlen(lineElement));
+				//DebugPrintf("moduleName:%s\n",moduleTemp[0][moduleNumTemp]);
 				if(appKeyNumber == 0)
 					appKeyNumber = lineNumberHandle - lineNumberTemp1 - 1;
 				if(lineNumberTemp)
-					moduleKeyNumber[moduleNum-1] = lineNumberHandle - lineNumberTemp -2;
+					moduleKeyNumber[moduleNumTemp-1] = lineNumberHandle - lineNumberTemp -2;
 				lineNumberTemp = lineNumberHandle;
 			}
 			moduleFlag = ENABLE;
@@ -420,33 +422,56 @@ AGAIN:
 				lineContentBufer++;			
 				while(isspace(lineContentBufer[0]))
 					lineContentBufer++;
-				moduleTemp[1][moduleNum] = (char *)malloc(1);
-				strncpy(moduleTemp[1][moduleNum], &lineContentBufer[0], 1);
-				//DebugPrintf("moduleEanble:%s\n",moduleTemp[1][moduleNum]);
-				DebugPrintf("module number:%d\n",moduleNum);
+				moduleTemp[1][moduleNumTemp] = (char *)malloc(1);
+				strncpy(moduleTemp[1][moduleNumTemp], &lineContentBufer[0], 1);
 			}
-			if(*moduleTemp[1][moduleNum] == ENABLE){	
+			if(*moduleTemp[1][moduleNumTemp] == ENABLE){	
 				moduleVaildFlag = ENABLE;
-				moduleNumVaild++;
+				moduleNumTempVaild++;
 			}
 			else
 				moduleVaildFlag = DISABLE;
-			moduleNum++;
+			moduleNumTemp++;
 			moduleFlag = DISABLE;
 		}
+		
 		if(moduleVaildFlag == DISABLE)
 			continue;
 		
 		if(firstInit == ENABLE)
 			continue;
 		
-		/* The work of the second processing */
+		/* ------------------------------ The work of the second processing ---------------------------------- */
 		
 		int returnNum = profileGetKey(&lineContentBufer, &keyName, &keyValue);
 		if(returnNum == -3)
 			goto EXIT3;
+		
+		if(!strcasecmp(keyName,"Enable")){
+			save_j++;
+			save_k=0;
+			continue;
+		}
+		
+		/* save APP top keyName and keyValue */
+		if(save_j == 0){
+			keyElement[0][0][1 + moduleNum + save_i] = (char *)malloc(strlen(keyName));
+			strcpy(keyElement[0][0][1 + moduleNum + save_i], keyName); 
+			keyElement[0][1][1 + moduleNum + save_i] = (char *)malloc(strlen(keyValue));
+			strcpy(keyElement[0][1][1 + moduleNum + save_i], keyValue); 
+			save_i++;
+			continue;
+		}
+		
+		/* save each module keyName and keyValue */
+		keyElement[save_j][0][save_k] = (char *)malloc(strlen(keyName));
+		strcpy(keyElement[save_j][0][save_k], keyName);
+		keyElement[save_j][1][save_k] = (char *)malloc(strlen(keyValue));
+		strcpy(keyElement[save_j][1][save_k], keyValue); 
+		save_k++;
+
 		//printf("line number: %d , line head: %s", lineNumber, lineContentBufer);
-		printf("keyName:%s, keyValue:%s\n", keyName, keyValue);
+		//printf("keyName:%s, keyValue:%s\n", keyName, keyValue);
 		// if(keyValue[0] == tagSpaceNULL)
 			// InfoPrintf("keyValue NULL\n");
 	
@@ -455,7 +480,8 @@ AGAIN:
 	/* can't find valid APP name on profile */
 	if(appNameTemp  == NULL)
 		goto EXIT2;
-
+	if(!validLineEnd)
+		goto EXIT3;
 
 	fclose(cfg_file);	
 	return 1;
@@ -472,7 +498,7 @@ EXIT3:
 	fclose(cfg_file);
 	return -3;
 EXIT4:
-	ErrorPrintf("Profile format is not correct, Each APP supports up to %d modules\n",MaxModuleNumber);
+	ErrorPrintf("Profile format is not correct, Each APP supports up to %d modules\n",MaxmoduleNumTempber);
 	fclose(cfg_file);
 	return -4;
 }
@@ -480,8 +506,79 @@ EXIT4:
 
 char *profile_getValue(char *appName, char *moduleName, char *key_Name)
 {
+	if(keyElement == NULL){
+		ErrorPrintf("keyElement is NULL!\n");
+		return 0;
+	}
+	int value_i=1,temp_i=0;
 	
+	/* check appName */
+	if(strcasecmp(keyElement[0][0][0],appName)){//  *keyElement[0][0][0] != *appName
+		ErrorPrintf("APP call Failed !!! The loading APP is: %s , please check the APP name of you input.\n",keyElement[0][0][0]);
+		return NULL;
+	}
 	
+	/* find APP key name and return value, moduleName and Enable status */
+	if(moduleName == NULL){
+		for(int i = 1;i <= moduleNum + appKeyNumber;i++){
+			if(!strcasecmp(keyElement[0][0][i],key_Name))
+				return keyElement[0][1][i];
+		}
+		ErrorPrintf("can't find this APP Key name !!! please check of you input.\n");
+		return NULL;
+	}
+	
+	/* check moduleName and count the array number */
+	for(int i = 1;i <= moduleNum;i++){
+		if(strcasecmp(keyElement[0][0][i],moduleName)){
+			if(*keyElement[0][1][i] == ENABLE)
+				value_i++;
+		}
+		else{
+			if(*keyElement[0][1][i] != ENABLE){
+				ErrorPrintf("This module function is DISABLE, if you want to using, please ENABLE it on profile.\n");
+				return NULL;
+			}
+			else{ 
+				/* find module key name and return value */
+				for(int j = 0;j < moduleKeyNumber[i-1];j++){
+					if(!strcasecmp(keyElement[value_i][0][j],key_Name))
+						return keyElement[value_i][1][j];
+				}
+				ErrorPrintf("Key Name Find Failed !!! please check the key name of you input.\n");
+				return NULL;
+			}
+		}
+	}
+	ErrorPrintf("moduleNum call Failed !!! please check the module name of you input.\n");
+	return NULL;
+	
+	// int i = 1;
+	// while(strcasecmp(keyElement[0][0][i],moduleName)){
+		// if(i>=moduleNum){
+			// ErrorPrintf("moduleNum call Failed !!! please check the module name of you input.\n");
+			// return NULL;
+		// }
+		// if(*keyElement[0][1][i] == ENABLE)
+			// value_i++;
+		// i++;
+	// }
+	// if(*keyElement[0][1][i] != ENABLE){
+		// ErrorPrintf("This moduleNum function is DISABLE, if you want to using, please ENABLE it on profile.\n");
+		// return NULL;
+	// }
+	// temp_i = i;
+	
+	// /* find module key name and return value */
+	// i = 0;
+	// while(strcasecmp(keyElement[value_i][0][i],key_Name)){
+		// if(i>=moduleKeyNumber[temp_i-1]-1){
+			// ErrorPrintf("Key Name Find Failed !!! please check the key name of you input.\n");
+			// return NULL;
+		// }
+		// i++;
+	// }
+	// return keyElement[value_i][1][i];
 }
 
 int profile_getALL(void)
@@ -490,8 +587,22 @@ int profile_getALL(void)
 		ErrorPrintf("keyElement is NULL!\n");
 		return 0;
 	}
-	for(int i=0;i <= 4;i++)
-		DebugPrintf("%s, %s\n",keyElement[0][0][i],keyElement[0][1][i]);
+	
+	/* get APP basic info */
+	for(int i=0;i < (1+ moduleNum + appKeyNumber);i++)
+		printf("%s, %s\n",keyElement[0][0][i],keyElement[0][1][i]);
+	
+	/* get module key info */
+	int l=0;
+	for(int i=1;i <= moduleNumTempVaild;i++){
+		while(*moduleTemp[1][l]==DISABLE)
+			l++;
+		for(int k = 0;k < moduleKeyNumber[l];k++)
+			printf("%s - %s\n",keyElement[i][0][k],keyElement[i][1][k]);
+		l++;
+	}
+	
+	return 1;
 }
 
 void FreeGrid(char**** p)
@@ -515,7 +626,7 @@ void FreeGrid(char**** p)
     p = NULL;
 }
 
-void FreeGrid2(char ****p,int m,int n,int t1,int *t2,char *arg[2][MaxModuleNumber])
+void FreeGrid2(char ****p,int m,int n,int t1,int *t2,char *arg[ElementNumber][MaxmoduleNumTempber])
 {
     if(p != NULL){
 		if(p[0] != NULL){
@@ -559,8 +670,20 @@ void FreeGrid2(char ****p,int m,int n,int t1,int *t2,char *arg[2][MaxModuleNumbe
 		}
         free(p);
         p = NULL;
-		DebugPrintf("Release OK!\n");
+		DebugPrintf("Release1 OK!\n");
     }
+	
+	DebugPrintf("Release arg: ");
+	for(int i=0;i<ElementNumber;i++){
+		for(int j=0;j<MaxmoduleNumTempber;j++){
+			if(arg[i][j] != NULL){
+				free(arg[i][j]);
+				arg[i][j] = NULL;
+				printf("arg[%d][%d],",i,j);
+			}
+		}
+	}
+	DebugPrintf("OK!\n");
 }
 
 
@@ -572,7 +695,7 @@ int profile_release(void)
 		// keyElement = NULL; //建议free某个指针之后立刻把这个指针赋值为NULL
 	// }
 	//FreeGrid(keyElement);
-	FreeGrid2(keyElement,moduleNumVaild,ElementNumber,(moduleNum + appKeyNumber + 2), moduleKeyNumber, moduleTemp);
+	FreeGrid2(keyElement,moduleNumTempVaild,ElementNumber,(1 + moduleNum + appKeyNumber), moduleKeyNumber, moduleTemp);
     keyElement = NULL;
 }
 

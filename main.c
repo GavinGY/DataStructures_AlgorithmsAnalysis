@@ -214,15 +214,12 @@ int main(int argc, char *argv[])
 	// printf("Get %s \n",get_config_var("enable"));
 	
 	profile_init(argv[1], argv[2]);
-	// DebugPrintf("Main Function APP NAME %s\n",appName);
-	profile_getALL();
+	//profile_getALL();
+	mergeImage(argv[2]);
+	printf("get value:%s\n",profile_getValue(argv[2],"NAND_BOOT","Partition2.File"));
 	profile_release();
 	profile_getALL();
-	// if(appName == NULL)
-		// InfoPrintf("Memory release OK, value = %s\n",appName);
-	// else 
-	    // ErrorPrintf("Memory release Failed, value = %s\n",appName);
-	
+
 	finish = clock();
 	duration = (double)(finish - start) / CLOCKS_PER_SEC;
 	printf("Function Execution Time is: %f seconds\n",duration);
