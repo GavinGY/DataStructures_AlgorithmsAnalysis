@@ -454,7 +454,8 @@ AGAIN:
 		if(save_j == 0){
 			keyElement[0][0][1 + moduleNum + save_i] = (char *)malloc(strlen(keyName));
 			strcpy(keyElement[0][0][1 + moduleNum + save_i], keyName); 
-			keyElement[0][1][1 + moduleNum + save_i] = (char *)malloc(strlen(keyValue));
+			keyElement[0][1][1 + moduleNum + save_i] = (char *)malloc(strlen(keyValue)+50);
+			//上面加50的的目的是为了方便使用strcat进行字符串拼接；因为此处经常是一个文件夹路径字符串需要拼接具体文件名字符串，根据库函数strcat函数实现特点，会将连接字符串copy到目标字符串后面
 			strcpy(keyElement[0][1][1 + moduleNum + save_i], keyValue); 
 			save_i++;
 			continue;

@@ -4,6 +4,70 @@
 
 char *getValue = NULL;
 char *functionModule[4]={"NOR","NAND","NAND_BOOT","NAND_OOB"};
+char keyNameAddr[] = "Partition0.Addr",keyNameFile[] = "Partition0.File";
+
+int c2i(char ch);
+int hex2dec(char *hex);
+
+int mergeImage2FLASH(char *appName,char* fun)
+{
+	char *binaryFileFloder = profile_getValue(appName,NULL,"BinaryFileFloder");
+	int strlentemp = strlen(binaryFileFloder); //使用 strcat 的前序工作，保存原始字符串长度
+	char *partitionNumberChar = (char *)malloc(1);// char partitionNumberChar; 
+	int partitionNumber = atoi(profile_getValue(appName,fun,"Partition.Number"));// 调用库函数将字符串(默认当成十进制)转成整数
+	char endFlag = DISABLE;
+	int startAddr = 0,fileLeng = 0;
+	char *fileName,*fileAddr,*filePath;
+	
+	DebugPrintf("will do merge Image for %s function\n",fun);
+	printf("partitionNumber %d\n",partitionNumber);
+	FILE* OutputFile = fopen("outPut.bin", "wb+");
+
+	while(partitionNumber--){
+		sprintf(partitionNumberChar,"%d",partitionNumber); //使用C语言库函数将整型变量转换成字符（一个字符）(十进制表示) 
+		keyNameAddr[9] = keyNameFile[9] = partitionNumberChar[0]; //替换字符串中的第9个字符（这样只支持一个字符）
+		printf("keyName %s\n",keyNameAddr);
+		
+		fileName = profile_getValue(appName,fun,keyNameFile);
+		if(fileName[0] == tagSpaceNULL){
+			ErrorPrintf("value is Blank Space!\n");
+			continue;
+		}
+		filePath = strcat(binaryFileFloder,fileName);
+		fileLeng = file_size(filePath);
+		printf("file path: %s, file leng: %d \n",filePath, fileLeng);
+		(binaryFileFloder+strlentemp)[0] = tagSpaceNULL; //使用 strcat 的后序工作，恢复原字符串
+	
+		fileAddr = profile_getValue(appName,fun,keyNameAddr);
+		char *temp = strchr(fileAddr, tagAddrValue);
+		if(temp == NULL)
+			return -3;
+		temp[0] = tagSpaceNULL;
+		printf("Addr start:%s; Addr end:%s \n",fileAddr,temp+1);
+		startAddr = hex2dec(fileAddr+2);
+		printf("Addr start(int):%d\n",startAddr);
+		
+
+	}
+		
+	return 1;
+}
+
+int mergeImage(char *appName)
+{
+	for(int i=0;i<4;i++){
+		getValue = profile_getValue(appName,NULL,functionModule[i]);
+		if(getValue == NULL){
+			ErrorPrintf("module error \n");
+		}
+		else if(*getValue == ENABLE){
+			DebugPrintf("module [ %s ] function is ENABLE\n",functionModule[i]);
+			mergeImage2FLASH(appName,functionModule[i]);
+		}
+	}
+	return 1;
+}
+ 
 
 /*
  * 将字符转换为数值
@@ -60,49 +124,3 @@ int hex2dec(char *hex)
         // 返回结果
         return num;
 }
-
-int mergeImage2FLASH(char *appName,char* fun)
-{
-	DebugPrintf("will do merge Image for %s function\n",fun);
-	getValue = profile_getValue(appName,fun,"Partition0.Addr");
-	if(getValue != NULL){
-		if(getValue[0] != tagSpaceNULL){
-			DebugPrintf("Get value is: %s\n",getValue);
-			char *temp = strchr(getValue, tagAddrValue);
-			if(temp == NULL)
-				return -3;
-			temp[0] = tagSpaceNULL;
-			printf("Addr start:%s; Addr end:%s \n",getValue,temp+1);
-			for(int i=0;i<strlen(temp+1);i++){
-				printf("addr end value %i:%c \n",i,(temp+1)[i]);
-			}
-			char *hello="002624";
-			printf("addr end change to int:%d\n",atoi(hello));
-			printf("addr end change to int:%d\n",hex2dec(hello));
-		}
-		else
-			ErrorPrintf("value is Blank Space!\n");
-	}
-	else
-		ErrorPrintf("value get failed!\n");
-	
-	return 1;
-}
-
-
-
-int mergeImage(char *appName)
-{
-	for(int i=0;i<4;i++){
-		getValue = profile_getValue(appName,NULL,functionModule[i]);
-		if(getValue == NULL){
-			ErrorPrintf("module error \n");
-		}
-		else if(*getValue == ENABLE){
-			DebugPrintf("module [ %s ] function is ENABLE\n",functionModule[i]);
-			mergeImage2FLASH(appName,functionModule[i]);
-		}
-	}
-	return 1;
-}
- 
