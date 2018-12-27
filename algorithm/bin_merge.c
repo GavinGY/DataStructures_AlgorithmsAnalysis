@@ -1,6 +1,8 @@
 #include "bin_merge.h"
 
 #define	tagAddrValue		'-'
+#define outputFileName      "Output.bin"
+#define outputFileNameBig   "Output_Big.bin"
 
 char *getValue = NULL;
 char *functionModule[4]={"NOR","NAND","NAND_BOOT","NAND_OOB"};
@@ -18,16 +20,22 @@ int mergeImage2FLASH(char *appName,char* fun)
 	char endFlag = DISABLE;
 	int startAddr = 0,fileLeng = 0;
 	char *fileName,*fileAddr,*filePath;
+	FILE *inputFile = NULL;
+	char *inputFile2arry = NULL;
 	
 	DebugPrintf("will do merge Image for %s function\n",fun);
 	printf("partitionNumber %d\n",partitionNumber);
-	FILE* OutputFile = fopen("outPut.bin", "wb+");
+	FILE* outputFileNew = fopen(outputFileName, "wb+");
+	fclose(outputFileNew);
+    FILE* outputFile = fopen(outputFileName, "rb+");
+	
 
 	while(partitionNumber--){
 		sprintf(partitionNumberChar,"%d",partitionNumber); //使用C语言库函数将整型变量转换成字符（一个字符）(十进制表示) 
 		keyNameAddr[9] = keyNameFile[9] = partitionNumberChar[0]; //替换字符串中的第9个字符（这样只支持一个字符）
 		printf("keyName %s\n",keyNameAddr);
 		
+		/* 读取目标partition的文件名 */
 		fileName = profile_getValue(appName,fun,keyNameFile);
 		if(fileName[0] == tagSpaceNULL){
 			ErrorPrintf("value is Blank Space!\n");
@@ -36,7 +44,11 @@ int mergeImage2FLASH(char *appName,char* fun)
 		filePath = strcat(binaryFileFloder,fileName);
 		fileLeng = file_size(filePath);
 		printf("file path: %s, file leng: %d \n",filePath, fileLeng);
-		(binaryFileFloder+strlentemp)[0] = tagSpaceNULL; //使用 strcat 的后序工作，恢复原字符串
+		inputFile2arry = (char *)malloc(fileLeng);
+		inputFile = fopen(filePath, "rb+");
+		(binaryFileFloder+strlentemp)[0] = tagSpaceNULL; //使用 strcat 的后序工作，恢复原字符串 binaryFileFloder 的内容
+		fread(inputFile2arry, 1, fileLeng, inputFile);
+		
 	
 		fileAddr = profile_getValue(appName,fun,keyNameAddr);
 		char *temp = strchr(fileAddr, tagAddrValue);
@@ -46,10 +58,31 @@ int mergeImage2FLASH(char *appName,char* fun)
 		printf("Addr start:%s; Addr end:%s \n",fileAddr,temp+1);
 		startAddr = hex2dec(fileAddr+2);
 		printf("Addr start(int):%d\n",startAddr);
+		fseek(outputFile, startAddr, SEEK_SET);
+		fwrite(inputFile2arry, 1, fileLeng, outputFile);
 		
-
+		fclose(inputFile);
+		free(inputFile2arry);
+		inputFile2arry = NULL;
 	}
 		
+	fclose(outputFile);
+	
+	if(!strcmp(profile_getValue(appName,fun,"Endian"),"Big")){
+		DebugPrintf("going to Endian conversion ...\n");
+		fseek(outputFile, 0, SEEK_SET);
+		file_reverse_4ByteC(outputFileName, outputFileNameBig);
+	}
+	
+	//./createnfimg -j 0 -b 4 -p 2048 -m 14 -i Output_Big.bin
+	char **createnfimgArgument = (char **)malloc(10 * sizeof(char *));
+	createnfimgArgument[0] = "-j";	createnfimgArgument[1] = "0";
+	createnfimgArgument[2] = "-b";	createnfimgArgument[3] = "4";
+	createnfimgArgument[4] = "-p";	createnfimgArgument[5] = "2048";
+	createnfimgArgument[6] = "-m";	createnfimgArgument[7] = "14";
+	createnfimgArgument[8] = "-i";	createnfimgArgument[9] = outputFileNameBig;
+	createnfimg(10,createnfimgArgument);	
+	
 	return 1;
 }
 

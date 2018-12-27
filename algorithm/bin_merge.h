@@ -8,6 +8,8 @@
 #include "../debug.h"
 #include "../config.h"
 #include "profile_parse.h"
+#include "arry_reverse.h"
+#include "createnfimg.h"
 
 int mergeImage(char *appName);
 
