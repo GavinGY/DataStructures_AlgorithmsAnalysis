@@ -6,7 +6,7 @@
 
 char *getValue = NULL;
 char *functionModule[4]={"NOR","NAND","NAND_BOOT","NAND_OOB"};
-char keyNameAddr[] = "Partition0.Addr",keyNameFile[] = "Partition0.File";
+char keyNameAddr[] = "Partition00.Addr",keyNameFile[] = "Partition00.File";
 
 int c2i(char ch);
 int hex2dec(char *hex);
@@ -17,7 +17,6 @@ int mergeImage2FLASH(char *appName,char* fun)
 	int strlentemp = strlen(binaryFileFloder); //使用 strcat 的前序工作，保存原始字符串长度
 	char *partitionNumberChar = (char *)malloc(1);// char partitionNumberChar; 
 	int partitionNumber = atoi(profile_getValue(appName,fun,"Partition.Number"));// 调用库函数将字符串(默认当成十进制)转成整数
-	char endFlag = DISABLE;
 	int startAddr = 0,fileLeng = 0;
 	char *fileName,*fileAddr,*filePath;
 	FILE *inputFile = NULL;
@@ -28,12 +27,16 @@ int mergeImage2FLASH(char *appName,char* fun)
 	FILE* outputFileNew = fopen(outputFileName, "wb+");
 	fclose(outputFileNew);
     FILE* outputFile = fopen(outputFileName, "rb+");
-	
 
+	
 	while(partitionNumber--){
-		sprintf(partitionNumberChar,"%d",partitionNumber); //使用C语言库函数将整型变量转换成字符（一个字符）(十进制表示) 
+		sprintf(partitionNumberChar,"%d",partitionNumber/10); //使用C语言库函数将整型变量转换成字符（一个字符）(十进制表示) 
 		keyNameAddr[9] = keyNameFile[9] = partitionNumberChar[0]; //替换字符串中的第9个字符（这样只支持一个字符）
-		printf("keyName %s\n",keyNameAddr);
+		sprintf(partitionNumberChar,"%d",partitionNumber%10); //使用C语言库函数将整型变量转换成字符（一个字符）(十进制表示) 
+		keyNameAddr[10] = keyNameFile[10] = partitionNumberChar[0]; //替换字符串中的第9个字符（这样只支持一个字符）
+
+		DebugPrintf("keyNameAddr: %s ,keyNameFile: %s\n", keyNameAddr, keyNameFile);
+		//continue;
 		
 		/* 读取目标partition的文件名 */
 		fileName = profile_getValue(appName,fun,keyNameFile);
@@ -75,13 +78,13 @@ int mergeImage2FLASH(char *appName,char* fun)
 	}
 	
 	//./createnfimg -j 0 -b 4 -p 2048 -m 14 -i Output_Big.bin
-	char **createnfimgArgument = (char **)malloc(10 * sizeof(char *));
-	createnfimgArgument[0] = "-j";	createnfimgArgument[1] = "0";
-	createnfimgArgument[2] = "-b";	createnfimgArgument[3] = "4";
-	createnfimgArgument[4] = "-p";	createnfimgArgument[5] = "2048";
-	createnfimgArgument[6] = "-m";	createnfimgArgument[7] = "14";
-	createnfimgArgument[8] = "-i";	createnfimgArgument[9] = outputFileNameBig;
-	createnfimg(10,createnfimgArgument);	
+	// char **createnfimgArgument = (char **)malloc(10 * sizeof(char *));
+	// createnfimgArgument[0] = "-j";	createnfimgArgument[1] = "0";
+	// createnfimgArgument[2] = "-b";	createnfimgArgument[3] = "4";
+	// createnfimgArgument[4] = "-p";	createnfimgArgument[5] = "2048";
+	// createnfimgArgument[6] = "-m";	createnfimgArgument[7] = "14";
+	// createnfimgArgument[8] = "-i";	createnfimgArgument[9] = outputFileNameBig;
+	// createnfimg(10,createnfimgArgument);	
 	
 	return 1;
 }
