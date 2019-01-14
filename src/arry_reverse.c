@@ -1,4 +1,4 @@
-#include "arry_reverse.h"
+#include "../include/arry_reverse.h"
 #include <sys/stat.h>
 #include <unistd.h>
 

@@ -21,6 +21,7 @@
 
 #include <stdio.h>
 #include <stdarg.h>
+#include <time.h>
 
 #define __DEBUG__
 
@@ -69,6 +70,6 @@
 
 
 void my_trace(const char *cmd, ...);
-
+int execution_timeDebug(char *label,int (*function)(char *),char *a);
 
 #endif

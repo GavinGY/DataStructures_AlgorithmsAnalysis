@@ -5,8 +5,8 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "../debug.h"
-#include "../config.h"
+#include "debug.h"
+#include "config.h"
 #include "profile_parse.h"
 #include "arry_reverse.h"
 #include "createnfimg.h"

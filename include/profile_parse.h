@@ -1,3 +1,13 @@
+/**-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-**-*-*-*-*-*-*-*-*-*-*-*-*
+#  > Author  ： Gavin | Zhang GuiYang
+#  > Mail    ： gavin.gy.zhang@gmail.com
+#  > Date    ： Dec/25/2018
+#  > Company ： Foxconn·CNSBG·CPEGBBD·RD
+#  > Funciton:  profile parse function
+#  > Version :  v1.0 
+#  > HowToUse:  -
+# *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-**-*-*-*-*-*-*-*-*-*-*-*-*/
+
 #ifndef _PROFILE_PARSE_H_
 #define _PROFILE_PARSE_H_
 
@@ -19,15 +29,8 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-#include "../debug.h"
-#include "../config.h"
-
-#define	MAX_PATH_LEN		(512)
-#define	MAX_FILE_NAME_LEN	(128)
-
-int parse_config_file(char *path_to_config_file);
-void print_all_vars();
-char *get_config_var(char *var_name);
+#include "debug.h"
+#include "config.h"
 
 
 int profile_init(char *profileName, char *appName);
@@ -35,7 +38,6 @@ char *profile_getValue(char *appName, char *moduleName, char *key_Name);
 int profile_getALL(void);
 int profile_release(void);
 
-// int getProfile(char* profile);
 
 #endif
 

@@ -9,11 +9,11 @@
 #include <unistd.h>
 
 #include "debug.h"
-#include "algorithm/sorting_algorithm.h"
-#include "algorithm/linked_list.h"
-#include "algorithm/arry_reverse.h"
-#include "algorithm/profile_parse.h"
-#include "algorithm/bin_merge.h"
+#include "sorting_algorithm.h"
+#include "linked_list.h"
+#include "arry_reverse.h"
+#include "profile_parse.h"
+#include "bin_merge.h"
 
 #define ENABLE               '1'
 #define DISABLE              '0'

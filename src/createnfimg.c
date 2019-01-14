@@ -64,7 +64,7 @@ OPTIONS:
 #include <stdint.h>
 #include <getopt.h>
 
-#include "createnfimg.h"
+#include "../include/createnfimg.h"
 
 /********************************************************************************/
 /* Begin support for JFFS2 cleanmarker in spare area and 1 bit Hamming ECC     */
@@ -697,7 +697,7 @@ static void nand_calculate_ecc_BRCM_bch(uint8_t *data,uint8_t *ecc_code,int m,in
 
       /* contains generating polynomial gxM_T[] for field order = M and
        * correction capability = T */
-#include "bch_gen_poly.h"
+#include "../include/bch_gen_poly.h"
 
     /*------------------------------------------------------------------------------- */
     /* Construct msg in bit (LSB first) */

@@ -1,4 +1,4 @@
-#include "config.h"
+#include "../include/config.h"
 
 #define test_number 10
 
@@ -205,24 +205,14 @@ int main(int argc, char *argv[])
 	
 	/* 配置文件解析问题 Profile Parse */ 
 	// 实现获取配置文件中的指定数据，Get ==> APP.Module.KEY.Value
-	clock_t start, finish;
-	double  duration;      
-	start = clock();
-	//  getProfile(argv[1]);
-	// parse_config_file(argv[1]);
-	// print_all_vars();
-	// printf("Get %s \n",get_config_var("enable"));
-	
-	profile_init(argv[1], argv[2]);
-	//profile_getALL();
-	mergeImage(argv[2]);
-	printf("get value:%s\n",profile_getValue(argv[2],"NAND_BOOT","Partition2.File"));
-	profile_release();
-	profile_getALL();
-
-	finish = clock();
-	duration = (double)(finish - start) / CLOCKS_PER_SEC;
-	printf("Function Execution Time is: %f seconds\n",duration);
+        if(argc != 3){
+                ErrorPrintf("please input Correct parameter!\n");
+                ErrorPrintf("such as: \"./binMerge.elf binMerge.cfg Charlie100_FXC\" \n");
+                return 0;
+        }
+        profile_init(argv[1], argv[2]);
+        execution_timeDebug("binMerge",mergeImage,argv[2]);
+        profile_release();
 
 
 	getchar();

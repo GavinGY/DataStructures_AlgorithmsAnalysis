@@ -1,4 +1,4 @@
-#include "sorting_algorithm.h"
+#include "../include/sorting_algorithm.h"
 
 // 七大基数排序算法
 // 基数排序擅长对数字进行排序
