@@ -58,6 +58,10 @@ int mergeImage2FLASH(char *appName,char* fun)
 		}
 		filePath = strcat(binaryFileFloder,fileName);
 		fileLeng = file_size(filePath);
+                if(fileLeng == 0){
+                        ErrorPrintf("Cant open file, please check File Floder or file name: %s \n", filePath);
+                        goto EXIT;
+                }
 		printf("  -> file path: %s, file leng: %d \n",filePath, fileLeng);
 		inputFile2arry = (char *)malloc(fileLeng);
 		inputFile = fopen(filePath, "rb+");
@@ -117,6 +121,7 @@ int mergeImage2FLASH(char *appName,char* fun)
 	}
 	
 EXIT:
+	(binaryFileFloder+strlentemp)[0] = tagSpaceNULL; //使用 strcat 的后序工作，恢复原字符串 binaryFileFloder 的内容
 	(outputFileName+strlen(appName))[0] = tagSpaceNULL; //使用 strcat 的后序工作，恢复原字符串 appName 的内容
 	return 1;
 }

@@ -1,3 +1,12 @@
+/**-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-**-*-*-*-*-*-*-*-*-*-*-*-*
+#  > Author  ： Gavin | Zhang GuiYang
+#  > Mail    ： gavin.gy.zhang@gmail.com
+#  > Date    ： Dec/25/2018
+#  > Company ： Foxconn·CNSBG·CPEGBBD·RD
+#  > Funciton:  debug config 
+#  > Version :  v1.0 
+#  > HowToUse:  -
+# *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-**-*-*-*-*-*-*-*-*-*-*-*-*/
 #ifndef _DEBUG_H_
 #define _DEBUG_H_
 
@@ -20,6 +29,7 @@
 
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdarg.h>
 #include <time.h>
 
@@ -66,7 +76,8 @@
 
 #endif
 
-
+#define Error( Str )        FatalError( Str )
+#define FatalError( Str )   fprintf( stderr, "%s\n", Str ), exit( 1 )
 
 
 void my_trace(const char *cmd, ...);

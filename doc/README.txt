@@ -26,11 +26,11 @@ DSAA-Project  Data Structures Algorithms Analysis
 
 Big Module:
 
-1.七大排序算法实现  接口：algorithm/sorting_algorithm.h 选择排序和快速排序
+1.七大排序算法实现  接口：include/sorting_algorithm.h 选择排序和快速排序
 
-2.C语言链表实现     接口：algorithm/linked_list.h
+2.C语言链表实现     接口：include/linked_list.h
 
-3.数组逆序算法实现  接口：algorithm/arry_reverse.h
+3.数组逆序算法实现  接口：include/arry_reverse.h
 
 4.文件操作（二进制和文本）  
 
@@ -38,7 +38,7 @@ Big Module:
 
 6.查找问题的算法实现：二分法
 
-7.Debug功能         接口：debug.h
+7.Debug功能         接口：include/debug.h
 
 --------------------------------------------------------------------------------------
 
@@ -58,5 +58,7 @@ Application Demo：
 
 1.二进制文件处理(大小端转换)    ==> 文件操作.二进制文件
 
-2.配置文件解析                  ==> 文件操作.文本文件    实现 ==> algorithm/profile_parse.h
+2.配置文件解析                  ==> 文件操作.文本文件    实现 ==> include/profile_parse.h
+
+3.bin文件合并 嵌入式开发常用    ==> 文件操作.二进制文件  实现 ==> include/bin_merge.h
   

@@ -1,3 +1,13 @@
+/**-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-**-*-*-*-*-*-*-*-*-*-*-*-*
+#  > Author  ： Gavin | Zhang GuiYang
+#  > Mail    ： gavin.gy.zhang@gmail.com
+#  > Date    ： Dec/25/2018
+#  > Company ： Foxconn·CNSBG·CPEGBBD·RD
+#  > Funciton:  arry reverse function
+#  > Version :  v1.0 
+#  > HowToUse:  -
+# *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-**-*-*-*-*-*-*-*-*-*-*-*-*/
+
 #ifndef _ARRY_REVERSE_H_
 #define _ARRY_REVERSE_H_
 

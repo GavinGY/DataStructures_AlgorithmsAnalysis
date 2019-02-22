@@ -205,16 +205,24 @@ int main(int argc, char *argv[])
 	
 	/* 配置文件解析问题 Profile Parse */ 
 	// 实现获取配置文件中的指定数据，Get ==> APP.Module.KEY.Value
-        if(argc != 3){
-                ErrorPrintf("please input Correct parameter!\n");
-                ErrorPrintf("such as: \"./binMerge.elf binMerge.cfg Charlie100_FXC\" \n");
-                return 0;
-        }
-        profile_init(argv[1], argv[2]);
-        execution_timeDebug("binMerge",mergeImage,argv[2]);
-        profile_release();
+	/* if(argc != 3){
+			ErrorPrintf("please input Correct parameter!\n");
+			ErrorPrintf("such as: \"./binMerge.elf binMerge.cfg Charlie100_FXC\" \n");
+			return 0;
+	}
+	profile_init(argv[1], argv[2]);
+	execution_timeDebug("binMerge",mergeImage,argv[2]);
+	profile_release(); */ 
 
-
+	/* 散列/哈希表的实现 Hash Table */ 
+	HashTable H = InitializeTable( 10 );
+	printf( "Hash Table: \n" );
+	for (int i = 1; i < 11; i++ )
+	{
+		Insert( i * i, H );
+		printf( "%d:%d\n", i*i, Hash( i * i, 10 ) );
+    }
+	
 	getchar();
 	return 1;
 }

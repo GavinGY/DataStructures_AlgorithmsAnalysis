@@ -1,3 +1,13 @@
+/**-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-**-*-*-*-*-*-*-*-*-*-*-*-*
+#  > Author  ： Gavin | Zhang GuiYang
+#  > Mail    ： gavin.gy.zhang@gmail.com
+#  > Date    ： Dec/25/2018
+#  > Company ： Foxconn·CNSBG·CPEGBBD·RD
+#  > Funciton:  fucntion config file
+#  > Version :  v1.0 
+#  > HowToUse:  -
+# *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-**-*-*-*-*-*-*-*-*-*-*-*-*/
+
 #ifndef _CONFIG_H_
 #define _CONFIG_H_
 
@@ -14,6 +24,7 @@
 #include "arry_reverse.h"
 #include "profile_parse.h"
 #include "bin_merge.h"
+#include "hash_table.h"
 
 #define ENABLE               '1'
 #define DISABLE              '0'

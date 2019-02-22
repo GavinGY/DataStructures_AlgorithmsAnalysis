@@ -1,3 +1,13 @@
+/**-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-**-*-*-*-*-*-*-*-*-*-*-*-*
+#  > Author  ： Gavin | Zhang GuiYang
+#  > Mail    ： gavin.gy.zhang@gmail.com
+#  > Date    ： Dec/25/2018
+#  > Company ： Foxconn·CNSBG·CPEGBBD·RD
+#  > Funciton:  arry reverse function
+#  > Version :  v1.0 
+#  > HowToUse:  -
+# *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-**-*-*-*-*-*-*-*-*-*-*-*-*/
+
 #include "../include/arry_reverse.h"
 #include <sys/stat.h>
 #include <unistd.h>
@@ -110,14 +120,14 @@ int file_reverse_4ByteB(char* Infile, char* Outfile){
 // 总结：该方式速度快（i5 64bit 128MB ==> 0.3s) 原因：a.执行fwrite只需要1次
 int file_reverse_4ByteC(char* Infile, char* Outfile){
         int file_leng = file_size(Infile);
-        printf("file leng: %d \n",file_leng);
+        printf("  -> file leng: %d Byte\n",file_leng);
         int arry_leng = 0;
         int handle_buffer = sizeof(unsigned int);
         if(file_leng % handle_buffer)
                 arry_leng = (file_leng / handle_buffer) + handle_buffer;
         else
                 arry_leng = (file_leng / handle_buffer);
-        printf("arry leng: %d \n",arry_leng);
+        printf("  -> arry leng: %d * %d Byte\n",arry_leng,handle_buffer);
         unsigned int* arry_file = (unsigned int*)malloc(handle_buffer * arry_leng);
         FILE* InputFile = fopen(Infile, "rb+");
         FILE* OutputFile = fopen(Outfile, "wb+");
@@ -126,7 +136,7 @@ int file_reverse_4ByteC(char* Infile, char* Outfile){
                 exit(1);
         }
         int number_read = fread( arry_file, handle_buffer, arry_leng, InputFile);
-        printf("file read: %d byte\n", number_read * handle_buffer);
+        printf("  -> file read: %d Byte\n", number_read * handle_buffer);
         int invalidNumber = 0;
         //unsigned char* arry_file_addr = (void*)arry_file;
         //printf("print addr: %p data: %X \n", arry_file_addr, *arry_file_addr);
@@ -138,9 +148,9 @@ int file_reverse_4ByteC(char* Infile, char* Outfile){
                         arry_reverseC(&arry_file[i], handle_buffer);
                 }
         }
-        printf("arry invalid number: %d \n", invalidNumber);
+        printf("  -> arry invalid number: %d * %d Byte\n", invalidNumber, handle_buffer);
         int number_write = fwrite(arry_file, handle_buffer, arry_leng, OutputFile);
-        printf("file write: %d byte\n", number_write * handle_buffer);
+        printf("  -> file write: %d Byte\n", number_write * handle_buffer);
         fclose(InputFile);
         fclose(OutputFile);
 }
