@@ -217,11 +217,38 @@ int main(int argc, char *argv[])
 	/* 散列/哈希表的实现 Hash Table */ 
 	HashTable H = InitializeTable( 10 );
 	printf( "Hash Table: \n" );
-	for (int i = 1; i < 11; i++ )
-	{
-		Insert( i * i, H );
-		printf( "%d:%d\n", i*i, Hash( i * i, 10 ) );
-    }
+	// 数字 int 类型 （需要修改 hash_table.h :  typedef int ElementType）
+	// for (int i = 1; i < 11; i++ )
+		// Insert( i * i, H );
+	// for (int i = 1; i < 11; i++ )
+		// printf( "find Key: %d, Position: %d\n", i*i, Find(i * i,H ));
+	// 字符串 char* 类型 （需要修改 hash_table.h : typedef char* ElementType）
+	Insert( "aa", H );
+	Insert( "bb", H );
+	Insert( "cc", H );
+	Insert( "dd", H );
+	Insert( "ee", H );
+	Insert( "ff", H );
+	Insert( "gg", H );
+	Insert( "hh", H );
+	Insert( "ii", H );
+	Insert( "jj", H );
+	Insert( "kk", H );
+	//Insert( "ll", H );
+	printf( "find Key: %s, Position: %d\n", "aa", Find("aa",H ));
+	printf( "find Key: %s, Position: %d\n", "bb", Find("bb",H ));
+	printf( "find Key: %s, Position: %d\n", "cc", Find("cc",H ));
+	printf( "find Key: %s, Position: %d\n", "dd", Find("dd",H ));
+	printf( "find Key: %s, Position: %d\n", "ee", Find("ee",H ));
+	printf( "find Key: %s, Position: %d\n", "ff", Find("ff",H ));
+	printf( "find Key: %s, Position: %d\n", "gg", Find("gg",H ));
+	printf( "find Key: %s, Position: %d\n", "hh", Find("hh",H ));
+	printf( "find Key: %s, Position: %d\n", "ii", Find("ii",H ));
+	printf( "find Key: %s, Position: %d\n", "jj", Find("jj",H ));
+	printf( "find Key: %s, Position: %d\n", "kk", Find("kk",H ));
+	//printf( "find Key: %s, Position: %d\n", "ll", Find("ll",H ));
+	
+	
 	
 	getchar();
 	return 1;
